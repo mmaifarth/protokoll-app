@@ -547,15 +547,338 @@ export default function App() {
                               </div>
                             )}
                             
-                            {/* Abstimmungs-Editor */}
                             {!antrag.abstimmung ? (
                               <button 
                                 onClick={() => initAbstimmung(index, aIndex)}
-{/* ... existing code ... */}
+                                className="mt-2 text-sm bg-white border border-emerald-300 text-emerald-700 px-3 py-1 rounded hover:bg-emerald-100"
+                              >
+                                + Abstimmungsergebnis erfassen
+                              </button>
+                            ) : (
+                              <div className="mt-4 bg-white p-3 rounded border border-emerald-200">
+                                <h5 className="text-sm font-bold mb-2">Abstimmungsergebnis</h5>
+                                <div className="grid grid-cols-4 gap-2 text-sm text-center">
+                                  <div></div><div className="font-medium text-gray-600">Dafür</div><div className="font-medium text-gray-600">Dagegen</div><div className="font-medium text-gray-600">Enthaltung</div>
+                                  
+                                  <div className="text-left font-medium">Fachschaften</div>
+                                  <input type="number" min="0" value={antrag.abstimmung.fuer.fs} onChange={e => updateAbstimmung(index, aIndex, 'fuer', 'fs', e.target.value)} className="border rounded p-1" />
+                                  <input type="number" min="0" value={antrag.abstimmung.gegen.fs} onChange={e => updateAbstimmung(index, aIndex, 'gegen', 'fs', e.target.value)} className="border rounded p-1" />
+                                  <input type="number" min="0" value={antrag.abstimmung.enthaltung.fs} onChange={e => updateAbstimmung(index, aIndex, 'enthaltung', 'fs', e.target.value)} className="border rounded p-1" />
+                                  
+                                  <div className="text-left font-medium">Stimmgewichte</div>
+                                  <input type="number" min="0" value={antrag.abstimmung.fuer.weight} onChange={e => updateAbstimmung(index, aIndex, 'fuer', 'weight', e.target.value)} className="border rounded p-1" />
+                                  <input type="number" min="0" value={antrag.abstimmung.gegen.weight} onChange={e => updateAbstimmung(index, aIndex, 'gegen', 'weight', e.target.value)} className="border rounded p-1" />
+                                  <input type="number" min="0" value={antrag.abstimmung.enthaltung.weight} onChange={e => updateAbstimmung(index, aIndex, 'enthaltung', 'weight', e.target.value)} className="border rounded p-1" />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {top.wahlen && top.wahlen.length > 0 && (
+                      <div className="space-y-4">
+                        <h4 className="font-bold text-blue-800 border-b border-blue-200 pb-1">Wahlen & Abstimmungen (ohne Antrag)</h4>
+                        {top.wahlen.map((wahl, wIndex) => (
+                          <div key={wIndex} className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg relative">
+                            <button onClick={() => removeWahl(index, wIndex)} className="absolute top-2 right-2 text-gray-400 hover:text-red-500"><Trash2 size={16}/></button>
+                            
+                            <div className="mb-4">
+                              <label className="block text-xs font-bold text-blue-700 uppercase mb-1">Titel der Wahl</label>
+                              <input 
+                                type="text" 
+                                value={wahl.titel} 
+                                onChange={e => updateWahlTitel(index, wIndex, e.target.value)} 
+                                className="w-full border-gray-300 rounded p-2 text-sm" 
+                                placeholder="z.B. Wahl der Versammlungsleitung" 
+                              />
+                            </div>
+
+                            <table className="w-full text-sm text-left mb-2">
+                              <thead className="text-xs text-gray-500 bg-blue-100">
+                                <tr>
+                                  <th className="p-2 rounded-tl">Kandidat*in / Option</th>
+                                  <th className="p-2 text-center">Für (FS/Gew)</th>
+                                  <th className="p-2 text-center">Gegen (FS/Gew)</th>
+                                  <th className="p-2 text-center">Enth. (FS/Gew)</th>
+                                  <th className="p-2 rounded-tr"></th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {wahl.kandidaten.map((k, kIndex) => (
+                                  <tr key={kIndex} className="border-b border-blue-100 last:border-0">
+                                    <td className="p-1">
+                                      <input type="text" value={k.name} onChange={e => updateKandidat(index, wIndex, kIndex, 'name', null, e.target.value)} className="w-full border-gray-300 rounded p-1" placeholder="Name..." />
+                                    </td>
+                                    <td className="p-1">
+                                      <div className="flex gap-1 justify-center">
+                                        <input type="number" min="0" value={k.fuer.fs} onChange={e => updateKandidat(index, wIndex, kIndex, 'fuer', 'fs', e.target.value)} className="w-12 border-gray-300 rounded p-1 text-center" title="Fachschaften" />
+                                        <input type="number" min="0" value={k.fuer.weight} onChange={e => updateKandidat(index, wIndex, kIndex, 'fuer', 'weight', e.target.value)} className="w-14 border-gray-300 rounded p-1 text-center bg-gray-50" title="Stimmgewichte" />
+                                      </div>
+                                    </td>
+                                    <td className="p-1">
+                                      <div className="flex gap-1 justify-center">
+                                        <input type="number" min="0" value={k.gegen.fs} onChange={e => updateKandidat(index, wIndex, kIndex, 'gegen', 'fs', e.target.value)} className="w-12 border-gray-300 rounded p-1 text-center" title="Fachschaften" />
+                                        <input type="number" min="0" value={k.gegen.weight} onChange={e => updateKandidat(index, wIndex, kIndex, 'gegen', 'weight', e.target.value)} className="w-14 border-gray-300 rounded p-1 text-center bg-gray-50" title="Stimmgewichte" />
+                                      </div>
+                                    </td>
+                                    <td className="p-1">
+                                      <div className="flex gap-1 justify-center">
+                                        <input type="number" min="0" value={k.enthaltung.fs} onChange={e => updateKandidat(index, wIndex, kIndex, 'enthaltung', 'fs', e.target.value)} className="w-12 border-gray-300 rounded p-1 text-center" title="Fachschaften" />
+                                        <input type="number" min="0" value={k.enthaltung.weight} onChange={e => updateKandidat(index, wIndex, kIndex, 'enthaltung', 'weight', e.target.value)} className="w-14 border-gray-300 rounded p-1 text-center bg-gray-50" title="Stimmgewichte" />
+                                      </div>
+                                    </td>
+                                    <td className="p-1 text-center">
+                                      <button onClick={() => removeKandidat(index, wIndex, kIndex)} className="text-red-400 hover:text-red-600"><Trash2 size={16}/></button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                            
+                            <button 
+                              onClick={() => addKandidat(index, wIndex)}
+                              className="text-xs bg-white border border-blue-200 text-blue-600 px-2 py-1 rounded hover:bg-blue-100"
+                            >
+                              + Kandidat*in / Option hinzufügen
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="space-y-3">
+                      {top.goAntraege.map((go, goIndex) => (
+                        <div key={goIndex} className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-r-lg relative">
+                          <button onClick={() => removeGOAntrag(index, goIndex)} className="absolute top-2 right-2 text-gray-400 hover:text-red-500"><Trash2 size={16}/></button>
+                          <h4 className="font-bold text-orange-800 mb-3 text-sm uppercase">GO-Antrag</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                            <div><label className="block text-xs text-gray-500">Einreichend</label><input type="text" value={go.einreichend} onChange={e => updateGOAntrag(index, goIndex, 'einreichend', e.target.value)} className="w-full border-gray-300 rounded p-1 mt-1" /></div>
+                            <div><label className="block text-xs text-gray-500">Uhrzeit</label><input type="time" value={go.uhrzeit} onChange={e => updateGOAntrag(index, goIndex, 'uhrzeit', e.target.value)} className="w-full border-gray-300 rounded p-1 mt-1" /></div>
+                            <div className="md:col-span-2"><label className="block text-xs text-gray-500">Antrag (Inhalt)</label><input type="text" value={go.antrag} onChange={e => updateGOAntrag(index, goIndex, 'antrag', e.target.value)} className="w-full border-gray-300 rounded p-1 mt-1" placeholder="z.B. Schluss der Debatte" /></div>
+                            <div><label className="block text-xs text-gray-500">Gegenrede</label><input type="text" value={go.gegenrede} onChange={e => updateGOAntrag(index, goIndex, 'gegenrede', e.target.value)} className="w-full border-gray-300 rounded p-1 mt-1" placeholder="Name oder 'Keine'" /></div>
+                            <div><label className="block text-xs text-gray-500">Ergebnis</label><input type="text" value={go.ergebnis} onChange={e => updateGOAntrag(index, goIndex, 'ergebnis', e.target.value)} className="w-full border-gray-300 rounded p-1 mt-1" placeholder="z.B. 15/2/3 oder Angenommen" /></div>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
+                        <button 
+                          onClick={() => addGOAntrag(index)}
+                          className="flex items-center gap-1 text-sm bg-orange-50 border border-orange-200 hover:bg-orange-100 text-orange-700 px-3 py-2 rounded font-medium transition"
+                        >
+                          <Plus size={16} /> GO-Antrag
+                        </button>
+                        <button 
+                          onClick={() => addWahl(index)}
+                          className="flex items-center gap-1 text-sm bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded font-medium transition"
+                        >
+                          <Plus size={16} /> Wahl erfassen
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+                )}
+              </div>
+            )})}
+          </div>
+        )}
+      </div>
+
+      {/* DRUCK ANSICHT */}
+      <div className="hidden print:block bg-white text-black min-h-screen">
+        <style dangerouslySetInnerHTML={{__html: `
+          @page {
+              size: A4;
+              margin: 25mm 20mm;
+              @bottom-center {
+                  content: counter(page);
+                  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                  font-size: 9pt;
+                  color: #555555;
+              }
+          }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          
+          body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11pt; line-height: 1.4; color: #222; }
+          
+          .cover-page { text-align: center; margin-top: 60mm; page-break-after: always; position: relative; }
+          .institution { font-size: 16pt; font-weight: bold; color: #005030; margin-bottom: 10mm; text-transform: uppercase; letter-spacing: 1px; }
+          .title { font-size: 24pt; font-weight: bold; margin-bottom: 5mm; }
+          .subtitle { font-size: 16pt; color: #555555; margin-bottom: 30mm; }
+          .event-details { font-size: 12pt; color: #333333; margin-bottom: 3mm; line-height: 1.6; }
+
+          h1 { font-size: 18pt; color: #005030; border-bottom: 2px solid #005030; padding-bottom: 5px; margin-top: 0; page-break-after: avoid; margin-bottom: 20px;}
+          h2 { font-size: 14pt; margin-top: 25px; margin-bottom: 10px; page-break-after: avoid; }
+          h3 { font-size: 11pt; text-transform: uppercase; color: #666666; margin-top: 15px; margin-bottom: 5px; page-break-after: avoid; }
+
+          .item-text { margin-bottom: 15px; text-align: justify; hyphens: auto;}
+
+          .antrag-box { background-color: #f4f7f6; border-left: 5px solid #005030; padding: 15px 20px; margin-top: 15px; margin-bottom: 20px; page-break-inside: avoid; }
+          .antrag-header { font-weight: bold; font-size: 10pt; color: #005030; border-bottom: 1px solid #d0ded8; padding-bottom: 8px; margin-bottom: 12px; }
+
+          .wahl-box { background-color: #f0f9ff; border-left: 5px solid #0284c7; padding: 15px 20px; margin-top: 15px; margin-bottom: 20px; page-break-inside: avoid; }
+          .wahl-header { font-weight: bold; font-size: 10pt; color: #0284c7; border-bottom: 1px solid #bae6fd; padding-bottom: 8px; margin-bottom: 12px; }
+
+          .go-box { background-color: #fff3e0; border-left: 5px solid #ff9800; padding: 12px 18px; margin-top: 10px; margin-bottom: 20px; page-break-inside: avoid; }
+          .go-header { font-weight: bold; font-size: 10.5pt; color: #e65100; border-bottom: 1px solid #ffe0b2; padding-bottom: 6px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+          .go-content { font-size: 10pt; line-height: 1.5; margin-bottom: 6px; }
+
+          table { width: 100%; border-collapse: collapse; margin-bottom: 30px; page-break-inside: avoid; }
+          th, td { border: 1px solid #dddddd; padding: 10px; text-align: left; font-size: 10pt; }
+          th { background-color: #f2f2f2; }
+
+          .meta-table th { background-color: transparent; border: none; font-weight: bold; padding: 5px 10px 5px 0;}
+          .meta-table td { border: none; padding: 5px 0;}
+          .meta-table tr { border-bottom: 1px solid #eeeeee; }
+          .meta-table tr:last-child { border-bottom: none; }
+
+          .toc-list { list-style-type: none; padding-left: 0; margin: 0; }
+          .toc-item { display: flex; align-items: baseline; margin-bottom: 8px; width: 100%; }
+          .toc-link { color: #005030; font-weight: bold; text-decoration: none; white-space: nowrap; }
+          .toc-dots { flex-grow: 1; border-bottom: 2px dotted #ccc; margin: 0 10px; position: relative; top: -3px; }
+          
+          .toc-page::after { content: target-counter(attr(data-target), page); font-size: 10pt; color: #555; }
+
+          .page-break { page-break-before: always; }
+        `}} />
+
+        <div className="cover-page">
+            <div className="institution">Konvent der Fachschaften<br/>Ludwig-Maximilians-Universität München</div>
+            <div className="title">Sitzungsprotokoll</div>
+            <div className="subtitle">Sitzung am {formattedPrintDate()}</div>
+            <div className="event-details">Ab {meta.beginn} Uhr c.t. in F007</div>
+            <div className="event-details">Geschwister-Scholl-Platz 1</div>
+            <div style={{fontSize: '12pt', marginTop: '15mm'}}><strong>Stand:</strong> {new Date().toLocaleDateString('de-DE')}</div>
+        </div>
+
+        <div className="page-break"></div>
+
+        <h1>Sitzungsübersicht</h1>
+        <table className="meta-table">
+            <tbody>
+              <tr><th width="30%">Datum</th><td width="70%">{formattedPrintDate()}</td></tr>
+              <tr><th>Beginn</th><td>{meta.beginn} Uhr</td></tr>
+              <tr><th>Ende</th><td>{meta.ende ? `${meta.ende} Uhr` : ''}</td></tr>
+              <tr><th>Redeleitung</th><td>{meta.redeleitung}</td></tr>
+              <tr><th>Protokoll</th><td>{meta.protokoll}</td></tr>
+              {meta.anhang && <tr><th>Anhang</th><td>{meta.anhang}</td></tr>}
+            </tbody>
+        </table>
+
+        <h2>Inhaltsverzeichnis</h2>
+        <ul className="toc-list">
+            {tagesordnung.map((row, i) => {
+                const targetId = `top-${row.slug}`;
+                return (
+                  <li key={i} className="toc-item">
+                    <a href={`#${targetId}`} className="toc-link">{row.item_number}: {row.title}</a>
+                    {row.vertagt && <em style={{color: '#e65100', marginLeft: '8px', fontWeight:'normal'}}>(Vertagt)</em>}
+                    <div className="toc-dots"></div>
+                    <span className="toc-page" data-target={`#${targetId}`}></span>
+                  </li>
+                );
+            })}
+        </ul>
+
+        <div className="page-break"></div>
+
+        <h1>Tagesordnung und Protokoll</h1>
+
+        {tagesordnung.map((row, index) => {
+          const topNumStr = String(row.item_number).trim();
+          const targetId = `top-${row.slug}`;
+          
+          return (
+            <div key={index}>
+              <h2 id={targetId}>
+                {topNumStr}: {row.title}
+                {row.vertagt && <span style={{color: '#e65100', marginLeft: '10px'}}> [Vertagt]</span>}
+                {!row.vertagt && isHauptTop(topNumStr) && row.uhrzeit && (
+                  <span style={{fontSize: '11pt', color: '#555', fontWeight: 'normal', marginLeft: '10px'}}>
+                    (ab {row.uhrzeit} Uhr)
+                  </span>
+                )}
+              </h2>
+
+              {index === 0 && !row.vertagt && (
+                <>
+                  <h3 style={{color: '#005030'}}>Anwesenheitsliste</h3>
+                  <table>
+                      <thead>
+                          <tr>
+                              <th width="35%"></th>
+                              <th width="65%">Fachschaften</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <tr>
+                              <td><strong>Anwesende Fachschaften</strong></td>
+                              <td>{top1Anwesend.join(', ')}<br/><small>Anzahl gesamt: {top1Anwesend.length}</small></td>
+                          </tr>
+                          <tr>
+                              <td><strong>Beschlussfähigkeit (Anwesende Fachschaften &ge; 24)</strong></td>
+                              <td style={{fontWeight: 'bold', color: top1Anwesend.length >= 24 ? '#005030' : '#b50000'}}>
+                                  {top1Anwesend.length >= 24 ? 'Ja' : 'Nein'}
+                              </td>
+                          </tr>
+                          {top1Entschuldigt.length > 0 && (
+                          <tr>
+                              <td><strong>Entschuldigt</strong></td>
+                              <td>{top1Entschuldigt.join(', ')}</td>
+                          </tr>
+                          )}
+                          {top1Ausgeschlossen.length > 0 && (
+                          <tr>
+                              <td><strong>Ausgeschlossen gemäß § 52 (4) Satz 2 Grundordnung</strong></td>
+                              <td>{top1Ausgeschlossen.join(', ')}</td>
+                          </tr>
+                          )}
+                      </tbody>
+                  </table>
+
+                  {sitzungsverlauf.length > 0 && (
+                  <>
+                    <h3 style={{color: '#005030'}}>Sitzungsverlauf</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th width="20%">Uhrzeit</th>
+                                <th width="80%">Ereignisvermerk</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {sitzungsverlauf.map((v, i) => (
+                            <tr key={i}>
+                                <td><strong>{v.uhrzeit} Uhr</strong></td>
+                                <td>{v.vermerk}</td>
+                            </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                  </>
+                  )}
+                </>
+              )}
+
+              {!row.vertagt && row.text && (
+                  <div className="item-text" dangerouslySetInnerHTML={{__html: row.text.replace(/\n/g, '<br/>')}}></div>
+              )}
+
+              {!row.vertagt && row.antraege && row.antraege.map((antrag, aIdx) => {
+                
+                let totalFs = 0, totalW = 0;
+                if (antrag.abstimmung) {
+                  totalFs = antrag.abstimmung.fuer.fs + antrag.abstimmung.gegen.fs + antrag.abstimmung.enthaltung.fs;
+                  totalW = antrag.abstimmung.fuer.weight + antrag.abstimmung.gegen.weight + antrag.abstimmung.enthaltung.weight;
+                }
+
                 return (
                   <div className="antrag-box" key={aIdx}>
                       <div className="antrag-header">
-                          Antrag {row.item_number}: {antrag.Bezeichner} | Einreichend: {antrag.Antragsteller} | Status: {antrag.Status}
+                          Antrag {topNumStr}: {antrag.Bezeichner} | Einreichend: {antrag.Antragsteller} | Status: {antrag.Status}
                       </div>
 
                       {antrag.Text && (
@@ -573,4 +896,94 @@ export default function App() {
                       )}
 
                       {antrag.abstimmung && (
-{/* ... existing code ... */}
+                          <>
+                          <h3>Abstimmungsergebnis</h3>
+                          <table>
+                              <thead>
+                                  <tr>
+                                      <th width="35%">Kategorie</th>
+                                      <th width="32.5%">Anzahl Fachschaften</th>
+                                      <th width="32.5%">Anzahl Stimmgewichte</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  <tr>
+                                      <td><strong>Fürstimmen</strong></td>
+                                      <td>{antrag.abstimmung.fuer.fs} ({calculateShare(antrag.abstimmung.fuer.fs, totalFs)}%)</td>
+                                      <td>{antrag.abstimmung.fuer.weight} ({calculateShare(antrag.abstimmung.fuer.weight, totalW)}%)</td>
+                                  </tr>
+                                  <tr>
+                                      <td><strong>Gegenstimmen</strong></td>
+                                      <td>{antrag.abstimmung.gegen.fs} ({calculateShare(antrag.abstimmung.gegen.fs, totalFs)}%)</td>
+                                      <td>{antrag.abstimmung.gegen.weight} ({calculateShare(antrag.abstimmung.gegen.weight, totalW)}%)</td>
+                                  </tr>
+                                  <tr>
+                                      <td><strong>Enthaltungen</strong></td>
+                                      <td>{antrag.abstimmung.enthaltung.fs} ({calculateShare(antrag.abstimmung.enthaltung.fs, totalFs)}%)</td>
+                                      <td>{antrag.abstimmung.enthaltung.weight} ({calculateShare(antrag.abstimmung.enthaltung.weight, totalW)}%)</td>
+                                  </tr>
+                                  <tr>
+                                      <td><strong>Gesamt</strong></td>
+                                      <td>{totalFs}</td>
+                                      <td>{totalW}</td>
+                                  </tr>
+                              </tbody>
+                          </table>
+                          </>
+                      )}
+                  </div>
+                );
+              })}
+
+              {!row.vertagt && row.wahlen && row.wahlen.length > 0 && (
+                <>
+                  {row.wahlen.map((wahl, wIdx) => (
+                    <div className="wahl-box" key={wIdx}>
+                      <div className="wahl-header">Wahlergebnis: {wahl.titel}</div>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th width="25%">Kandidat*in / Option</th>
+                            <th width="25%">Fürstimmen<br/><small>(FS / Gewichte)</small></th>
+                            <th width="25%">Gegenstimmen<br/><small>(FS / Gewichte)</small></th>
+                            <th width="25%">Enthaltungen<br/><small>(FS / Gewichte)</small></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {wahl.kandidaten.map((k, kIdx) => (
+                            <tr key={kIdx}>
+                              <td><strong>{k.name}</strong></td>
+                              <td>{k.fuer.fs} / {k.fuer.weight}</td>
+                              <td>{k.gegen.fs} / {k.gegen.weight}</td>
+                              <td>{k.enthaltung.fs} / {k.enthaltung.weight}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+                </>
+              )}
+
+              {!row.vertagt && row.goAntraege && row.goAntraege.length > 0 && (
+                  <div className="go-box">
+                      <div className="go-header">Antrag zur Geschäftsordnung</div>
+                      {row.goAntraege.map((go, gIdx) => (
+                          <div key={gIdx} className="go-content">
+                              <strong>Einreichend:</strong> {go.einreichend}<br/>
+                              <strong>Uhrzeit:</strong> {go.uhrzeit} Uhr<br/>
+                              <strong>Antrag:</strong> {go.antrag}<br/>
+                              <strong>Gegenrede:</strong> {go.gegenrede}<br/>
+                              <strong>Abstimmungsergebnis:</strong> {go.ergebnis}
+                              {gIdx < row.goAntraege.length - 1 && <hr style={{borderTop: '1px dashed #ffe0b2', margin: '8px 0'}} />}
+                          </div>
+                      ))}
+                  </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
