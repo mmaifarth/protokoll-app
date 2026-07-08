@@ -20,7 +20,6 @@ const parseCSV = (csvText) => {
   const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
   if (lines.length === 0) return [];
 
-  // Trennzeichen erkennen (Semikolon oder Komma)
   const headerLine = lines[0];
   const separator = (headerLine.split(';').length > headerLine.split(',').length) ? ';' : ',';
 
@@ -32,7 +31,7 @@ const parseCSV = (csvText) => {
       const char = line[i];
       if (char === '"' && line[i + 1] === '"') {
         cell += '"';
-        i++; // Escape-Quote überspringen
+        i++; 
       } else if (char === '"') {
         inQuotes = !inQuotes;
       } else if (char === separator && !inQuotes) {
@@ -60,19 +59,58 @@ const parseCSV = (csvText) => {
   return data;
 };
 
-// Liste aller Fachschaften (anpassbar)
 const FACHSCHAFTEN_LIST = [
-  "FS BWL", "FS VWL", "FS Jura", "FS Medizin", "FS Physik", 
-  "FS Chemie", "FS Biologie", "FS Informatik", "FS Mathematik", 
-  "FS Geschichte", "FS Philosophie", "FS Psychologie", "FS Soziologie",
-  "FS Kunstpädagogik", "FS Tiermedizin", "FS Pharmazie", "FS Theologie (ev.)",
-  "FS Theologie (kath.)", "FS Geowissenschaften", "FS Ethnologie", "FS Anglistik",
-  "FS Germanistik", "FS Romanistik", "FS Skandinavistik"
+  "01 Katholische Theologie",
+  "02 Evangelische Theologie",
+  "03 Jura",
+  "04 Betriebswirtschaft",
+  "05 Volkswirtschaft",
+  "06 Medizin",
+  "07 Zahnmedizin",
+  "08 Tiermedizin",
+  "09 Geschichte",
+  "10 Kunstgeschichte",
+  "11 Bildende Kunst",
+  "12 Musikwissenschaft",
+  "13 Theaterwissenschaft",
+  "14 Philosophie",
+  "16 Grundschul- und Sonderpädagogik",
+  "17 Pädagogik",
+  "18 Psychologie",
+  "19 Schulpsychologie",
+  "21 Japanologie",
+  "22 Archäologie und Altertum",
+  "23 Naher und Mittlerer Osten/Byzantinistik",
+  "24 Sinologie/Indologie/Tibetologie",
+  "25 Ethnologie",
+  "26 Kulturwissenschaft",
+  "27 Amerikanistik",
+  "28 Anglistik",
+  "29 Computerlinguistik",
+  "30 Deutsch als Fremdsprache",
+  "31 Germanistik",
+  "33 Klassische Philologie",
+  "34 Allgemeine und Vergleichende Literaturwissenschaft",
+  "35 Skandinavistik/Buchwissenschaften",
+  "36 Romanistik",
+  "38 Sprachwissenschaften",
+  "39 Kommunikationswissenschaft",
+  "40 Politische Wissenschaft",
+  "41 Soziologie",
+  "42 Bioinformatik",
+  "43 Informatik",
+  "44 Mathematik",
+  "46 Statistik und Data Science",
+  "48 Physik",
+  "49 Chemie",
+  "50 Pharmazie",
+  "51 Biologie",
+  "52 Geographie",
+  "53 Geowissenschaften"
 ].sort();
 
 // --- KOMPONENTEN ---
 
-// Custom Multi-Select Dropdown Component
 const MultiSelect = ({ options, selected, onChange, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -139,24 +177,17 @@ const MultiSelect = ({ options, selected, onChange, placeholder }) => {
 
 // Main App Component
 export default function App() {
-  // Metadaten State
   const [meta, setMeta] = useState({
     datum: '', beginn: '18:15', ende: '', redeleitung: '', protokoll: '', anhang: ''
   });
 
-  // Tagesordnung & Anträge State
   const [tagesordnung, setTagesordnung] = useState([]);
   const [antraegeRaw, setAntraegeRaw] = useState([]);
 
-  // TOP 1 State
   const [top1Anwesend, setTop1Anwesend] = useState([]);
   const [top1Entschuldigt, setTop1Entschuldigt] = useState([]);
   const [top1Ausgeschlossen, setTop1Ausgeschlossen] = useState([]);
   const [sitzungsverlauf, setSitzungsverlauf] = useState([]);
-
-  // Dynamischer State für alle anderen TOPs wird direkt im tagesordnung-Array gespeichert
-  // Struktur pro Element in tagesordnung: 
-  // { item_number, title, text, slug, vertagt: bool, uhrzeit: string, goAntraege: [], antraege: [] }
 
   const handleFileUpload = (event, type) => {
     const file = event.target.files[0];
@@ -166,16 +197,16 @@ export default function App() {
     reader.onload = (e) => {
       const data = parseCSV(e.target.result);
       if (type === 'tagesordnung') {
-        // Initialisiere die TOPs mit UI-spezifischen Feldern
         const enrichedData = data.map(row => ({
           ...row,
           item_number: (row.item_number || "").replace(/\.0$/, "").trim(),
           title: (row.title || "").trim(),
-          slug: slugify(row.title || ""),
+          slug: slugify((row.item_number || "") + "-" + (row.title || "")),
           vertagt: false,
           uhrzeit: '',
           goAntraege: [],
-          antraege: [] // Wird später gematched
+          wahlen: [], 
+          antraege: [] 
         }));
         setTagesordnung(enrichedData);
       } else {
@@ -185,13 +216,13 @@ export default function App() {
     reader.readAsText(file);
   };
 
-  // Mappe Anträge auf Tagesordnung, wenn beide geladen sind
   useEffect(() => {
     if (tagesordnung.length > 0 && antraegeRaw.length > 0) {
       setTagesordnung(prevTo => prevTo.map(top => {
-        // Matche anhand des exakten Titels (gestrippt)
         const matchingAntraege = antraegeRaw.filter(a => 
-          (a.Titel || "").trim() === top.title
+          (a.Titel || "").trim() === top.title ||
+          (a.TOP && String(a.TOP).trim() === String(top.item_number).trim()) ||
+          (a.item_number && String(a.item_number).trim() === String(top.item_number).trim())
         ).map(a => ({
           ...a,
           Bezeichner: a.Bezeichner || '',
@@ -199,20 +230,17 @@ export default function App() {
           Status: a.Status || '',
           Text: a.Text || '',
           Begründung: a.Begründung || '',
-          abstimmung: null // Wird im UI befüllt falls nötig
+          abstimmung: null
         }));
         
-        // Nur updaten, wenn es Änderungen gibt (verhindert Endlosschleife)
         if (JSON.stringify(top.antraege) !== JSON.stringify(matchingAntraege) && top.antraege.length === 0) {
             return { ...top, antraege: matchingAntraege };
         }
         return top;
       }));
     }
-  }, [antraegeRaw]); // Dependency absichtlich nur auf antraegeRaw, um manuell gesetzte States in tagesordnung nicht zu überschreiben
+  }, [antraegeRaw]); 
 
-
-  // --- UI Handler für TOP Modifikationen ---
   const updateTop = (index, field, value) => {
     const newTo = [...tagesordnung];
     newTo[index][field] = value;
@@ -239,6 +267,53 @@ export default function App() {
     setTagesordnung(newTo);
   };
 
+  const addWahl = (topIndex) => {
+    const newTo = [...tagesordnung];
+    newTo[topIndex].wahlen.push({
+      titel: '',
+      kandidaten: [
+        { name: '', fuer: {fs: 0, weight: 0}, gegen: {fs: 0, weight: 0}, enthaltung: {fs: 0, weight: 0} }
+      ]
+    });
+    setTagesordnung(newTo);
+  };
+
+  const updateWahlTitel = (topIndex, wIndex, value) => {
+    const newTo = [...tagesordnung];
+    newTo[topIndex].wahlen[wIndex].titel = value;
+    setTagesordnung(newTo);
+  };
+
+  const removeWahl = (topIndex, wIndex) => {
+    const newTo = [...tagesordnung];
+    newTo[topIndex].wahlen.splice(wIndex, 1);
+    setTagesordnung(newTo);
+  };
+
+  const addKandidat = (topIndex, wIndex) => {
+    const newTo = [...tagesordnung];
+    newTo[topIndex].wahlen[wIndex].kandidaten.push({
+      name: '', fuer: {fs: 0, weight: 0}, gegen: {fs: 0, weight: 0}, enthaltung: {fs: 0, weight: 0}
+    });
+    setTagesordnung(newTo);
+  };
+
+  const updateKandidat = (topIndex, wIndex, kIndex, type, field, value) => {
+    const newTo = [...tagesordnung];
+    if (type === 'name') {
+      newTo[topIndex].wahlen[wIndex].kandidaten[kIndex].name = value;
+    } else {
+      newTo[topIndex].wahlen[wIndex].kandidaten[kIndex][type][field] = Number(value) || 0;
+    }
+    setTagesordnung(newTo);
+  };
+
+  const removeKandidat = (topIndex, wIndex, kIndex) => {
+    const newTo = [...tagesordnung];
+    newTo[topIndex].wahlen[wIndex].kandidaten.splice(kIndex, 1);
+    setTagesordnung(newTo);
+  };
+
   const addSitzungsverlauf = () => {
     setSitzungsverlauf([...sitzungsverlauf, { uhrzeit: '', vermerk: '' }]);
   };
@@ -259,7 +334,6 @@ export default function App() {
     setTagesordnung(newTo);
   };
 
-  // --- Render Hilfsfunktionen ---
   const handlePrint = () => {
     window.print();
   };
@@ -267,7 +341,6 @@ export default function App() {
   const formattedPrintDate = () => {
     if (!meta.datum) return "";
     try {
-      // Annahme Input Format: YYYY-MM-DD
       const dateParts = meta.datum.split('-');
       if (dateParts.length === 3) {
         return `${dateParts[2]}.${dateParts[1]}.${dateParts[0].substring(2)}`;
@@ -283,9 +356,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
       
-      {/* ------------------------------------------------------------- */}
-      {/* EDITOR ANSICHT (Wird beim Drucken versteckt via 'print:hidden') */}
-      {/* ------------------------------------------------------------- */}
+      {/* EDITOR ANSICHT */}
       <div className="print:hidden max-w-5xl mx-auto p-6 space-y-8">
         
         <div className="flex justify-between items-center bg-emerald-800 text-white p-6 rounded-xl shadow-lg">
@@ -301,7 +372,6 @@ export default function App() {
           </button>
         </div>
 
-        {/* --- SCHRITT 1: METADATEN & UPLOAD --- */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <h2 className="text-xl font-bold text-emerald-800 mb-4 flex items-center gap-2">
             <FileText size={24}/> 1. Rahmendaten & Dateien
@@ -346,10 +416,10 @@ export default function App() {
           </div>
         </div>
 
-        {/* --- SCHRITT 2: TOP 1 ANWESENHEIT --- */}
+        {/* TOP 1 ANWESENHEIT */}
         {tagesordnung.length > 0 && (
           <div className="bg-white p-6 rounded-xl shadow-sm border border-emerald-200 border-l-4 border-l-emerald-600">
-            <h2 className="text-xl font-bold text-emerald-800 mb-4">TOP 1: Präsenzmatrix & Beschlussfähigkeit</h2>
+            <h2 className="text-xl font-bold text-emerald-800 mb-4">Anwesenheitsmatrix & Beschlussfähigkeit (Formalia)</h2>
             
             <div className="space-y-6">
               <div>
@@ -403,7 +473,7 @@ export default function App() {
                     }} className="w-32 border border-gray-300 p-1 rounded text-sm" />
                     <input type="text" value={v.vermerk} onChange={e => {
                       const newV = [...sitzungsverlauf]; newV[i].vermerk = e.target.value; setSitzungsverlauf(newV);
-                    }} className="flex-1 border border-gray-300 p-1 rounded text-sm" placeholder="z.B. FS XY kommt nach." />
+                    }} className="flex-1 border border-gray-300 p-1 rounded text-sm" placeholder="z.B. FS 04 kommt nach." />
                     <button onClick={() => {
                       const newV = [...sitzungsverlauf]; newV.splice(i, 1); setSitzungsverlauf(newV);
                     }} className="text-red-500 hover:text-red-700"><Trash2 size={18}/></button>
@@ -414,18 +484,15 @@ export default function App() {
           </div>
         )}
 
-        {/* --- SCHRITT 3: DYNAMISCHE TAGESORDNUNG --- */}
+        {/* DYNAMISCHE TAGESORDNUNG */}
         {tagesordnung.length > 0 && (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2">Tagesordnungspunkte</h2>
             
             {tagesordnung.map((top, index) => {
-              // TOP 1 wurde bereits speziell behandelt, wir zeigen ihn hier minimal oder überspringen ihn im Editor. 
-              // Für Transparenz zeigen wir den Header.
               
               return (
               <div key={index} className={`bg-white rounded-xl shadow-sm border ${top.vertagt ? 'border-orange-300 opacity-75' : 'border-gray-200'} overflow-hidden`}>
-                {/* TOP Header */}
                 <div className="bg-gray-50 p-4 border-b border-gray-200 flex flex-col md:flex-row justify-between md:items-center gap-4">
                   <h3 className="font-bold text-lg text-gray-800">
                     {top.item_number}: {top.title}
@@ -455,272 +522,45 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* TOP Content (Versteckt, wenn vertagt) */}
                 {!top.vertagt && (
                   <div className="p-4 space-y-6">
-                    {/* Gematchte Anträge */}
                     {top.antraege.length > 0 && (
                       <div className="space-y-4">
                         <h4 className="font-bold text-emerald-800 border-b border-emerald-100 pb-1">Zugehörige Anträge</h4>
                         {top.antraege.map((antrag, aIndex) => (
                           <div key={aIndex} className="bg-emerald-50 border-l-4 border-emerald-600 p-4 rounded-r-lg">
-                            <div className="text-sm text-gray-500 mb-2">
-                              <strong>Bezeichner:</strong> {antrag.Bezeichner} | <strong>Einreichend:</strong> {antrag.Antragsteller} | <strong>Status:</strong> {antrag.Status}
+                            <div className="text-sm text-gray-800 mb-3 border-b border-emerald-200 pb-2">
+                              <strong>Antrag {top.item_number}: {antrag.Bezeichner}</strong> | <strong>Einreichend:</strong> {antrag.Antragsteller} | <strong>Status:</strong> {antrag.Status}
                             </div>
+                            
+                            {antrag.Text && (
+                              <div className="mb-3">
+                                <strong className="text-xs text-emerald-700 uppercase">Antragstext / Beschlussfassung</strong>
+                                <div className="text-sm mt-1 text-gray-600" dangerouslySetInnerHTML={{__html: antrag.Text.replace(/\n/g, '<br/>')}}></div>
+                              </div>
+                            )}
+
+                            {antrag.Begründung && (
+                              <div className="mb-4">
+                                <strong className="text-xs text-emerald-700 uppercase">Begründung</strong>
+                                <div className="text-sm mt-1 text-gray-600" dangerouslySetInnerHTML={{__html: antrag.Begründung.replace(/\n/g, '<br/>')}}></div>
+                              </div>
+                            )}
                             
                             {/* Abstimmungs-Editor */}
                             {!antrag.abstimmung ? (
                               <button 
                                 onClick={() => initAbstimmung(index, aIndex)}
-                                className="mt-2 text-sm bg-white border border-emerald-300 text-emerald-700 px-3 py-1 rounded hover:bg-emerald-100"
-                              >
-                                + Abstimmungsergebnis erfassen
-                              </button>
-                            ) : (
-                              <div className="mt-4 bg-white p-3 rounded border border-emerald-200">
-                                <h5 className="text-sm font-bold mb-2">Abstimmungsergebnis</h5>
-                                <div className="grid grid-cols-4 gap-2 text-sm text-center">
-                                  <div></div><div className="font-medium text-gray-600">Dafür</div><div className="font-medium text-gray-600">Dagegen</div><div className="font-medium text-gray-600">Enthaltung</div>
-                                  
-                                  <div className="text-left font-medium">Fachschaften</div>
-                                  <input type="number" min="0" value={antrag.abstimmung.fuer.fs} onChange={e => updateAbstimmung(index, aIndex, 'fuer', 'fs', e.target.value)} className="border rounded p-1" />
-                                  <input type="number" min="0" value={antrag.abstimmung.gegen.fs} onChange={e => updateAbstimmung(index, aIndex, 'gegen', 'fs', e.target.value)} className="border rounded p-1" />
-                                  <input type="number" min="0" value={antrag.abstimmung.enthaltung.fs} onChange={e => updateAbstimmung(index, aIndex, 'enthaltung', 'fs', e.target.value)} className="border rounded p-1" />
-                                  
-                                  <div className="text-left font-medium">Stimmgewichte</div>
-                                  <input type="number" min="0" value={antrag.abstimmung.fuer.weight} onChange={e => updateAbstimmung(index, aIndex, 'fuer', 'weight', e.target.value)} className="border rounded p-1" />
-                                  <input type="number" min="0" value={antrag.abstimmung.gegen.weight} onChange={e => updateAbstimmung(index, aIndex, 'gegen', 'weight', e.target.value)} className="border rounded p-1" />
-                                  <input type="number" min="0" value={antrag.abstimmung.enthaltung.weight} onChange={e => updateAbstimmung(index, aIndex, 'enthaltung', 'weight', e.target.value)} className="border rounded p-1" />
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* GO Anträge */}
-                    <div className="space-y-3">
-                      {top.goAntraege.map((go, goIndex) => (
-                        <div key={goIndex} className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-r-lg relative">
-                          <button onClick={() => removeGOAntrag(index, goIndex)} className="absolute top-2 right-2 text-gray-400 hover:text-red-500"><Trash2 size={16}/></button>
-                          <h4 className="font-bold text-orange-800 mb-3 text-sm uppercase">GO-Antrag</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                            <div><label className="block text-xs text-gray-500">Einreichend</label><input type="text" value={go.einreichend} onChange={e => updateGOAntrag(index, goIndex, 'einreichend', e.target.value)} className="w-full border-gray-300 rounded p-1 mt-1" /></div>
-                            <div><label className="block text-xs text-gray-500">Uhrzeit</label><input type="time" value={go.uhrzeit} onChange={e => updateGOAntrag(index, goIndex, 'uhrzeit', e.target.value)} className="w-full border-gray-300 rounded p-1 mt-1" /></div>
-                            <div className="md:col-span-2"><label className="block text-xs text-gray-500">Antrag (Inhalt)</label><input type="text" value={go.antrag} onChange={e => updateGOAntrag(index, goIndex, 'antrag', e.target.value)} className="w-full border-gray-300 rounded p-1 mt-1" placeholder="z.B. Schluss der Debatte" /></div>
-                            <div><label className="block text-xs text-gray-500">Gegenrede</label><input type="text" value={go.gegenrede} onChange={e => updateGOAntrag(index, goIndex, 'gegenrede', e.target.value)} className="w-full border-gray-300 rounded p-1 mt-1" placeholder="Name oder 'Keine'" /></div>
-                            <div><label className="block text-xs text-gray-500">Ergebnis</label><input type="text" value={go.ergebnis} onChange={e => updateGOAntrag(index, goIndex, 'ergebnis', e.target.value)} className="w-full border-gray-300 rounded p-1 mt-1" placeholder="z.B. 15/2/3 oder Angenommen" /></div>
-                          </div>
-                        </div>
-                      ))}
-                      <button 
-                        onClick={() => addGOAntrag(index)}
-                        className="flex items-center gap-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded font-medium transition"
-                      >
-                        <Plus size={16} /> GO-Antrag hinzufügen
-                      </button>
-                    </div>
-
-                  </div>
-                )}
-              </div>
-            )})}
-          </div>
-        )}
-      </div>
-
-      {/* ------------------------------------------------------------- */}
-      {/* DRUCK ANSICHT (Nur sichtbar im Print-Modus via 'hidden print:block') */}
-      {/* ------------------------------------------------------------- */}
-      <div className="hidden print:block bg-white text-black min-h-screen">
-        <style dangerouslySetInnerHTML={{__html: `
-          @page {
-              size: A4;
-              margin: 25mm 20mm;
-              @bottom-center {
-                  content: counter(page);
-                  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-                  font-size: 9pt;
-                  color: #555555;
-              }
-          }
-          /* Custom Print Reset */
-          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          
-          body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11pt; line-height: 1.4; color: #222; }
-          
-          .cover-page { text-align: center; margin-top: 60mm; page-break-after: always; position: relative; }
-          .institution { font-size: 16pt; font-weight: bold; color: #005030; margin-bottom: 10mm; text-transform: uppercase; letter-spacing: 1px; }
-          .title { font-size: 24pt; font-weight: bold; margin-bottom: 5mm; }
-          .subtitle { font-size: 16pt; color: #555555; margin-bottom: 30mm; }
-          .event-details { font-size: 12pt; color: #333333; margin-bottom: 3mm; line-height: 1.6; }
-
-          h1 { font-size: 18pt; color: #005030; border-bottom: 2px solid #005030; padding-bottom: 5px; margin-top: 0; page-break-after: avoid; margin-bottom: 20px;}
-          h2 { font-size: 14pt; margin-top: 25px; margin-bottom: 10px; page-break-after: avoid; }
-          h3 { font-size: 11pt; text-transform: uppercase; color: #666666; margin-top: 15px; margin-bottom: 5px; page-break-after: avoid; }
-
-          .item-text { margin-bottom: 15px; text-align: justify; hyphens: auto;}
-
-          /* Styling für inhaltliche Anträge */
-          .antrag-box { background-color: #f4f7f6; border-left: 5px solid #005030; padding: 15px 20px; margin-top: 15px; margin-bottom: 20px; page-break-inside: avoid; }
-          .antrag-header { font-weight: bold; font-size: 10pt; color: #005030; border-bottom: 1px solid #d0ded8; padding-bottom: 8px; margin-bottom: 12px; }
-
-          /* Styling für GO-Anträge */
-          .go-box { background-color: #fff3e0; border-left: 5px solid #ff9800; padding: 12px 18px; margin-top: 10px; margin-bottom: 20px; page-break-inside: avoid; }
-          .go-header { font-weight: bold; font-size: 10.5pt; color: #e65100; border-bottom: 1px solid #ffe0b2; padding-bottom: 6px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-          .go-content { font-size: 10pt; line-height: 1.5; margin-bottom: 6px; }
-
-          table { width: 100%; border-collapse: collapse; margin-bottom: 30px; page-break-inside: avoid; }
-          th, td { border: 1px solid #dddddd; padding: 10px; text-align: left; font-size: 10pt; }
-          th { background-color: #f2f2f2; }
-
-          .meta-table th { background-color: transparent; border: none; font-weight: bold; padding: 5px 10px 5px 0;}
-          .meta-table td { border: none; padding: 5px 0;}
-          .meta-table tr { border-bottom: 1px solid #eeeeee; }
-          .meta-table tr:last-child { border-bottom: none; }
-
-          .toc-list { list-style-type: none; padding-left: 0; }
-          .toc-list li { margin-bottom: 8px; }
-          .toc-list span { color: #005030; font-weight: bold; }
-
-          .page-break { page-break-before: always; }
-        `}} />
-
-        {/* Deckblatt */}
-        <div className="cover-page">
-            <div className="institution">Konvent der Fachschaften<br/>Ludwig-Maximilians-Universität München</div>
-            <div className="title">Sitzungsprotokoll</div>
-            <div className="subtitle">Sitzung am {formattedPrintDate()}</div>
-            <div className="event-details">Ab {meta.beginn} Uhr c.t. in F007</div>
-            <div className="event-details">Geschwister-Scholl-Platz 1</div>
-            <div style={{fontSize: '12pt', marginTop: '15mm'}}><strong>Stand:</strong> {new Date().toLocaleDateString('de-DE')}</div>
-        </div>
-
-        <div className="page-break"></div>
-
-        {/* Metadaten & Inhaltsverzeichnis */}
-        <h1>Sitzungsübersicht</h1>
-        <table className="meta-table">
-            <tbody>
-              <tr><th width="30%">Datum</th><td width="70%">{formattedPrintDate()}</td></tr>
-              <tr><th>Beginn</th><td>{meta.beginn} Uhr</td></tr>
-              <tr><th>Ende</th><td>{meta.ende ? `${meta.ende} Uhr` : ''}</td></tr>
-              <tr><th>Redeleitung</th><td>{meta.redeleitung}</td></tr>
-              <tr><th>Protokoll</th><td>{meta.protokoll}</td></tr>
-              {meta.anhang && <tr><th>Anhang</th><td>{meta.anhang}</td></tr>}
-            </tbody>
-        </table>
-
-        <h2>Inhaltsverzeichnis</h2>
-        <ul className="toc-list">
-            {tagesordnung.map((row, i) => (
-                <li key={i}>
-                  <span>{row.item_number}: {row.title}</span>
-                  {row.vertagt && <em style={{color: '#e65100', marginLeft: '8px', fontWeight:'normal'}}>(Vertagt)</em>}
-                </li>
-            ))}
-        </ul>
-
-        <div className="page-break"></div>
-
-        {/* Tagesordnung und Protokoll */}
-        <h1>Tagesordnung und Protokoll</h1>
-
-        {tagesordnung.map((row, index) => {
-          const topNumStr = String(row.item_number).trim();
-          
-          return (
-            <div key={index}>
-              <h2>
-                {topNumStr}: {row.title}
-                {row.vertagt && <span style={{color: '#e65100', marginLeft: '10px'}}> [Vertagt]</span>}
-                {!row.vertagt && isHauptTop(topNumStr) && row.uhrzeit && (
-                  <span style={{fontSize: '11pt', color: '#555', fontWeight: 'normal', marginLeft: '10px'}}>
-                    (ab {row.uhrzeit} Uhr)
-                  </span>
-                )}
-              </h2>
-
-              {/* TOP 1 Speziallogik */}
-              {topNumStr === '1' && !row.vertagt && (
-                <>
-                  <h3 style={{color: '#005030'}}>Anwesenheitsliste</h3>
-                  <table>
-                      <thead>
-                          <tr><th width="35%"></th><th width="65%">Fachschaften</th></tr>
-                      </thead>
-                      <tbody>
-                          <tr>
-                              <td><strong>Anwesende Fachschaften</strong></td>
-                              <td>{top1Anwesend.join(', ')}<br/><small>Anzahl gesamt: {top1Anwesend.length}</small></td>
-                          </tr>
-                          <tr>
-                              <td><strong>Beschlussfähigkeit (Anwesende Fachschaften &ge; 24)</strong></td>
-                              <td style={{fontWeight: 'bold', color: top1Anwesend.length >= 24 ? '#005030' : '#b50000'}}>
-                                  {top1Anwesend.length >= 24 ? 'Ja' : 'Nein'}
-                              </td>
-                          </tr>
-                          {top1Entschuldigt.length > 0 && (
-                          <tr>
-                              <td><strong>Entschuldigt</strong></td>
-                              <td>{top1Entschuldigt.join(', ')}</td>
-                          </tr>
-                          )}
-                          {top1Ausgeschlossen.length > 0 && (
-                          <tr>
-                              <td><strong>Ausgeschlossen gemäß § 52 (4) Satz 2 Grundordnung</strong></td>
-                              <td>{top1Ausgeschlossen.join(', ')}</td>
-                          </tr>
-                          )}
-                      </tbody>
-                  </table>
-
-                  {sitzungsverlauf.length > 0 && (
-                  <>
-                    <h3 style={{color: '#005030'}}>Sitzungsverlauf</h3>
-                    <table>
-                        <thead>
-                            <tr><th width="20%">Uhrzeit</th><th width="80%">Ereignisvermerk</th></tr>
-                        </thead>
-                        <tbody>
-                            {sitzungsverlauf.map((v, i) => (
-                            <tr key={i}>
-                                <td><strong>{v.uhrzeit} Uhr</strong></td>
-                                <td>{v.vermerk}</td>
-                            </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                  </>
-                  )}
-                </>
-              )}
-
-              {/* Regulärer Text (aus CSV) */}
-              {!row.vertagt && row.text && (
-                  <div className="item-text" dangerouslySetInnerHTML={{__html: row.text.replace(/\n/g, '<br/>')}}></div>
-              )}
-
-              {/* Zugehörige Anträge */}
-              {!row.vertagt && row.antraege && row.antraege.map((antrag, aIdx) => {
-                
-                // Dynamische Berechnung für Abstimmung
-                let totalFs = 0, totalW = 0;
-                if (antrag.abstimmung) {
-                  totalFs = antrag.abstimmung.fuer.fs + antrag.abstimmung.gegen.fs + antrag.abstimmung.enthaltung.fs;
-                  totalW = antrag.abstimmung.fuer.weight + antrag.abstimmung.gegen.weight + antrag.abstimmung.enthaltung.weight;
-                }
-
+{/* ... existing code ... */}
                 return (
                   <div className="antrag-box" key={aIdx}>
                       <div className="antrag-header">
-                          Antrag: {antrag.Bezeichner} | Einreichend: {antrag.Antragsteller} | Status: {antrag.Status}
+                          Antrag {row.item_number}: {antrag.Bezeichner} | Einreichend: {antrag.Antragsteller} | Status: {antrag.Status}
                       </div>
 
                       {antrag.Text && (
                         <>
-                          <h3>Antragstext / Beschluss</h3>
+                          <h3>Antragstext / Beschlussfassung</h3>
                           <div className="item-text" dangerouslySetInnerHTML={{__html: antrag.Text.replace(/\n/g, '<br/>')}}></div>
                         </>
                       )}
@@ -733,65 +573,4 @@ export default function App() {
                       )}
 
                       {antrag.abstimmung && (
-                          <>
-                          <h3>Abstimmungsergebnis</h3>
-                          <table>
-                              <thead>
-                                  <tr>
-                                      <th width="35%">Kategorie</th>
-                                      <th width="32.5%">Anzahl Fachschaften</th>
-                                      <th width="32.5%">Anzahl Stimmgewichte</th>
-                                  </tr>
-                              </thead>
-                              <tbody>
-                                  <tr>
-                                      <td><strong>Fürstimmen</strong></td>
-                                      <td>{antrag.abstimmung.fuer.fs} ({calculateShare(antrag.abstimmung.fuer.fs, totalFs)}%)</td>
-                                      <td>{antrag.abstimmung.fuer.weight} ({calculateShare(antrag.abstimmung.fuer.weight, totalW)}%)</td>
-                                  </tr>
-                                  <tr>
-                                      <td><strong>Gegenstimmen</strong></td>
-                                      <td>{antrag.abstimmung.gegen.fs} ({calculateShare(antrag.abstimmung.gegen.fs, totalFs)}%)</td>
-                                      <td>{antrag.abstimmung.gegen.weight} ({calculateShare(antrag.abstimmung.gegen.weight, totalW)}%)</td>
-                                  </tr>
-                                  <tr>
-                                      <td><strong>Enthaltungen</strong></td>
-                                      <td>{antrag.abstimmung.enthaltung.fs} ({calculateShare(antrag.abstimmung.enthaltung.fs, totalFs)}%)</td>
-                                      <td>{antrag.abstimmung.enthaltung.weight} ({calculateShare(antrag.abstimmung.enthaltung.weight, totalW)}%)</td>
-                                  </tr>
-                                  <tr>
-                                      <td><strong>Gesamt</strong></td>
-                                      <td>{totalFs}</td>
-                                      <td>{totalW}</td>
-                                  </tr>
-                              </tbody>
-                          </table>
-                          </>
-                      )}
-                  </div>
-                );
-              })}
-
-              {/* GO-Anträge */}
-              {!row.vertagt && row.goAntraege && row.goAntraege.length > 0 && (
-                  <div className="go-box">
-                      <div className="go-header">Antrag zur Geschäftsordnung</div>
-                      {row.goAntraege.map((go, gIdx) => (
-                          <div key={gIdx} className="go-content">
-                              <strong>Einreichend:</strong> {go.einreichend}<br/>
-                              <strong>Uhrzeit:</strong> {go.uhrzeit} Uhr<br/>
-                              <strong>Antrag:</strong> {go.antrag}<br/>
-                              <strong>Gegenrede:</strong> {go.gegenrede}<br/>
-                              <strong>Abstimmungsergebnis:</strong> {go.ergebnis}
-                              {gIdx < row.goAntraege.length - 1 && <hr style={{borderTop: '1px dashed #ffe0b2', margin: '8px 0'}} />}
-                          </div>
-                      ))}
-                  </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+{/* ... existing code ... */}
