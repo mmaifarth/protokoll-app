@@ -762,9 +762,9 @@ export default function App() {
               top: 50%;
               left: 50%;
               transform: translate(-50%, -50%);
-              width: 80%;
-              opacity: 0.70;
-              z-index: -100;
+              width: 70%;
+              opacity: 0.25;
+              z-index: -1;
               pointer-events: none;
           }
 
@@ -773,7 +773,6 @@ export default function App() {
               top: 0;
               left: 0;
               right: 0;
-              height: 50px;
               z-index: 500;
           }
 
@@ -853,28 +852,23 @@ export default function App() {
           .page-break { page-break-before: always; }
         `}} />
 
-        {/* GLOBALES WASSERZEICHEN - Erzwingt Druck durch hartes <img> Tag */}
+        {/* GLOBALES WASSERZEICHEN */}
         <img src="Siegel.png" className="global-watermark" alt="LMU Siegel" />
 
-        {/* FIXIERTE KOPFZEILE - Wiederholt sich auf JEDER Seite */}
+        {/* FIXIERTE KOPFZEILE - Robustes Float-Layout gegen Chrome-Truncation-Bugs */}
         <div className="print-header-fixed">
-          <table style={{ width: '100%', borderBottom: '1px solid #ddd', paddingBottom: '10px' }}>
-            <tbody>
-              <tr>
-                <td style={{ width: '50%', textAlign: 'left', border: 'none', padding: 0 }}>
-                  <img src="Stuve Logo lang.png" alt="StuVe Logo" style={{ height: '35px' }} />
-                </td>
-                <td style={{ width: '50%', textAlign: 'right', verticalAlign: 'bottom', border: 'none', padding: 0, color: '#777', fontSize: '11pt', whiteSpace: 'nowrap' }}>
-                  Protokoll der Sitzung am {formattedPrintDate()}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div style={{ display: 'block', width: '100%', borderBottom: '1px solid #ddd', paddingBottom: '10px', height: '45px' }}>
+            <img src="Stuve Logo lang.png" alt="StuVe Logo" style={{ height: '35px', float: 'left' }} />
+            <div style={{ float: 'right', color: '#777', fontSize: '11pt', lineHeight: '35px' }}>
+              Protokoll der Sitzung am {formattedPrintDate()}
+            </div>
+            <div style={{ clear: 'both' }}></div>
+          </div>
         </div>
 
-        {/* DECKBLATT - Steht vor der Layout-Tabelle */}
+        {/* DECKBLATT */}
         <div className="cover-page">
-            {/* Maskiert die fixierte Kopfzeile nur auf Seite 1, lässt Siegel transparent */}
+            {/* Maskiert die fixierte Kopfzeile nur auf Seite 1 */}
             <div className="header-mask"></div>
             
             <div className="institution">Konvent der Fachschaften<br/>Ludwig-Maximilians-Universität München</div>
@@ -885,7 +879,7 @@ export default function App() {
             <div style={{fontSize: '13pt', marginTop: '15mm'}}><strong>Stand:</strong> {new Date().toLocaleDateString('de-DE')}</div>
         </div>
 
-        {/* HAUPTDOKUMENT - Verwendet leeren HTML-Tabellen-Header um Platz für die fixierte Kopfzeile zu schaffen */}
+        {/* HAUPTDOKUMENT */}
         <table className="print-layout-table">
           <thead>
             <tr>
@@ -927,7 +921,7 @@ export default function App() {
               </td>
             </tr>
 
-            {/* JEDER TOP IST EINE EIGENE TABELLENZEILE -> Zwingt Browser zur Header-Wiederholung */}
+            {/* JEDER TOP IST EINE EIGENE TABELLENZEILE */}
             {tagesordnung.map((row, index) => {
               const topNumStr = String(row.item_number).trim();
               const targetId = `top-${row.slug}`;
