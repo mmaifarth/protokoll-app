@@ -740,7 +740,7 @@ export default function App() {
       </div>
 
       {/* DRUCK ANSICHT */}
-      <div className="hidden print:block bg-white text-black min-h-screen">
+      <div className="hidden print:block text-black min-h-screen">
         <style dangerouslySetInnerHTML={{__html: `
           @page {
               size: A4;
@@ -754,21 +754,37 @@ export default function App() {
           }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           
+          body, .hidden.print\\:block { background-color: transparent !important; }
           body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12pt; line-height: 1.5; color: #222; }
           
-          .watermark {
+          .global-watermark {
               position: fixed;
               top: 50%;
               left: 50%;
               transform: translate(-50%, -50%);
               width: 80%;
-              height: 80%;
-              background-image: url('Siegel.png');
-              background-size: contain;
-              background-position: center;
-              background-repeat: no-repeat;
               opacity: 0.70;
-              z-index: -1;
+              z-index: -100;
+              pointer-events: none;
+          }
+
+          .print-header-fixed {
+              position: fixed;
+              top: 0;
+              left: 0;
+              right: 0;
+              height: 50px;
+              z-index: 500;
+          }
+
+          .header-mask {
+              position: absolute;
+              top: -30mm;
+              left: -20mm;
+              right: -20mm;
+              height: 80px;
+              background-color: white !important;
+              z-index: 600;
           }
 
           .print-layout-table {
@@ -794,8 +810,11 @@ export default function App() {
               margin-top: 40mm; 
               page-break-after: always; 
               position: relative; 
-              padding-top: 20mm; 
+              padding-top: 20mm;
+              background-color: transparent !important;
+              z-index: 10;
           }
+          
           .institution { font-size: 18pt; font-weight: bold; color: #005030; margin-bottom: 10mm; text-transform: uppercase; letter-spacing: 1px; }
           .title { font-size: 26pt; font-weight: bold; margin-bottom: 5mm; }
           .subtitle { font-size: 18pt; color: #555555; margin-bottom: 30mm; }
@@ -830,17 +849,34 @@ export default function App() {
           .toc-item { display: flex; align-items: baseline; margin-bottom: 10px; width: 100%; }
           .toc-link { color: #005030; font-weight: bold; text-decoration: none; white-space: nowrap; font-size: 12pt; }
           .toc-dots { flex-grow: 1; border-bottom: 2px dotted #ccc; margin: 0 10px; position: relative; top: -4px; }
-          
-          .toc-page::after { content: target-counter(attr(data-target), page); font-size: 11pt; color: #555; }
 
           .page-break { page-break-before: always; }
         `}} />
 
-        {/* GLOBALES WASSERZEICHEN */}
-        <div className="watermark"></div>
+        {/* GLOBALES WASSERZEICHEN - Erzwingt Druck durch hartes <img> Tag */}
+        <img src="Siegel.png" className="global-watermark" alt="LMU Siegel" />
 
-        {/* DECKBLATT - Steht vor der Layout-Tabelle -> Hat keine Kopfzeile */}
+        {/* FIXIERTE KOPFZEILE - Wiederholt sich auf JEDER Seite */}
+        <div className="print-header-fixed">
+          <table style={{ width: '100%', borderBottom: '1px solid #ddd', paddingBottom: '10px' }}>
+            <tbody>
+              <tr>
+                <td style={{ width: '50%', textAlign: 'left', border: 'none', padding: 0 }}>
+                  <img src="Stuve Logo lang.png" alt="StuVe Logo" style={{ height: '35px' }} />
+                </td>
+                <td style={{ width: '50%', textAlign: 'right', verticalAlign: 'bottom', border: 'none', padding: 0, color: '#777', fontSize: '11pt', whiteSpace: 'nowrap' }}>
+                  Protokoll der Sitzung am {formattedPrintDate()}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* DECKBLATT - Steht vor der Layout-Tabelle */}
         <div className="cover-page">
+            {/* Maskiert die fixierte Kopfzeile nur auf Seite 1, lässt Siegel transparent */}
+            <div className="header-mask"></div>
+            
             <div className="institution">Konvent der Fachschaften<br/>Ludwig-Maximilians-Universität München</div>
             <div className="title">Sitzungsprotokoll</div>
             <div className="subtitle">Sitzung am {formattedPrintDate()}</div>
@@ -849,30 +885,16 @@ export default function App() {
             <div style={{fontSize: '13pt', marginTop: '15mm'}}><strong>Stand:</strong> {new Date().toLocaleDateString('de-DE')}</div>
         </div>
 
-        {/* HAUPTDOKUMENT - Verwendet HTML-Tabellen-Header für wiederkehrende Kopfzeilen auf jeder neuen A4 Seite */}
+        {/* HAUPTDOKUMENT - Verwendet leeren HTML-Tabellen-Header um Platz für die fixierte Kopfzeile zu schaffen */}
         <table className="print-layout-table">
           <thead>
             <tr>
-              <td style={{ border: 'none', padding: 0 }}>
-                {/* VERSCHACHTELTE TABELLE FÜR DEN HEADER (VERHINDERT ABGESCHNITTENEN TEXT IN CHROME) */}
-                <table style={{ width: '100%', borderBottom: '1px solid #ddd', paddingBottom: '10px', marginBottom: '20px' }}>
-                  <tbody>
-                    <tr>
-                      <td style={{ textAlign: 'left', verticalAlign: 'bottom', padding: 0, border: 'none', width: '50%' }}>
-                        <img src="Stuve Logo lang.png" alt="StuVe Logo" style={{ height: '35px', width: 'auto' }} />
-                      </td>
-                      <td style={{ textAlign: 'right', verticalAlign: 'bottom', color: '#777', fontSize: '11pt', fontWeight: 'normal', padding: 0, border: 'none', whiteSpace: 'nowrap', width: '50%' }}>
-                        Protokoll der Sitzung am {formattedPrintDate()}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </td>
+              <td style={{ height: '70px', border: 'none', padding: 0 }}></td>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td style={{ border: 'none', padding: 0 }}>
+              <td style={{ border: 'none', padding: 0, paddingBottom: '30px' }}>
                   <h1>Sitzungsübersicht</h1>
                   <table className="meta-table">
                       <tbody>
@@ -894,7 +916,6 @@ export default function App() {
                               <a href={`#${targetId}`} className="toc-link">{row.item_number}: {row.title}</a>
                               {row.vertagt && <em style={{color: '#e65100', marginLeft: '8px', fontWeight:'normal'}}>(Vertagt)</em>}
                               <div className="toc-dots"></div>
-                              <span className="toc-page" data-target={`#${targetId}`}></span>
                             </li>
                           );
                       })}
@@ -906,6 +927,7 @@ export default function App() {
               </td>
             </tr>
 
+            {/* JEDER TOP IST EINE EIGENE TABELLENZEILE -> Zwingt Browser zur Header-Wiederholung */}
             {tagesordnung.map((row, index) => {
               const topNumStr = String(row.item_number).trim();
               const targetId = `top-${row.slug}`;
