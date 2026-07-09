@@ -178,7 +178,14 @@ const MultiSelect = ({ options, selected, onChange, placeholder }) => {
 // Main App Component
 export default function App() {
   const [meta, setMeta] = useState({
-    datum: '', beginn: '18:15', ende: '', redeleitung: '', protokoll: '', anhang: ''
+    datum: '', 
+    beginn: '18:15', 
+    ende: '', 
+    redeleitung: '', 
+    protokoll: '', 
+    anhang: '',
+    raum: 'F007',
+    ort: 'Geschwister-Scholl-Platz 1'
   });
 
   const [tagesordnung, setTagesordnung] = useState([]);
@@ -377,7 +384,7 @@ export default function App() {
             <FileText size={24}/> 1. Rahmendaten & Dateien
           </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Datum der Sitzung</label>
               <input type="date" value={meta.datum} onChange={e => setMeta({...meta, datum: e.target.value})} className="w-full border-gray-300 rounded-md shadow-sm focus:border-emerald-500 focus:ring-emerald-500 p-2 border text-base" />
@@ -401,6 +408,14 @@ export default function App() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Anhang (Optional)</label>
               <input type="text" value={meta.anhang} onChange={e => setMeta({...meta, anhang: e.target.value})} className="w-full border-gray-300 rounded-md shadow-sm focus:border-emerald-500 p-2 border text-base" placeholder="z.B. Präsentation TOP 4" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Raum</label>
+              <input type="text" value={meta.raum} onChange={e => setMeta({...meta, raum: e.target.value})} className="w-full border-gray-300 rounded-md shadow-sm focus:border-emerald-500 p-2 border text-base" placeholder="z.B. F007" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Ort / Adresse</label>
+              <input type="text" value={meta.ort} onChange={e => setMeta({...meta, ort: e.target.value})} className="w-full border-gray-300 rounded-md shadow-sm focus:border-emerald-500 p-2 border text-base" placeholder="z.B. Geschwister-Scholl-Platz 1" />
             </div>
           </div>
 
@@ -805,8 +820,8 @@ export default function App() {
             <div className="institution">Konvent der Fachschaften<br/>Ludwig-Maximilians-Universität München</div>
             <div className="title">Sitzungsprotokoll</div>
             <div className="subtitle">Sitzung am {formattedPrintDate()}</div>
-            <div className="event-details">Ab {meta.beginn} Uhr c.t. in F007</div>
-            <div className="event-details">Geschwister-Scholl-Platz 1</div>
+            <div className="event-details">Ab {meta.beginn} Uhr c.t. in {meta.raum}</div>
+            <div className="event-details">{meta.ort}</div>
             <div style={{fontSize: '13pt', marginTop: '15mm'}}><strong>Stand:</strong> {new Date().toLocaleDateString('de-DE')}</div>
         </div>
 
