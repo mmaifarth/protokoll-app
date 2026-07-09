@@ -184,7 +184,7 @@ export default function App() {
     redeleitung: '', 
     protokoll: '', 
     anhang: '',
-    raum: 'A120',
+    raum: 'F007',
     ort: 'Geschwister-Scholl-Platz 1'
   });
 
@@ -194,7 +194,7 @@ export default function App() {
   const [top1Anwesend, setTop1Anwesend] = useState([]);
   const [top1Entschuldigt, setTop1Entschuldigt] = useState([]);
   const [top1Ausgeschlossen, setTop1Ausgeschlossen] = useState([]);
-  const [sitzungsverlauf, setSitzungsverlauf] = useState([]);
+  const [sitzungsverlauf, setSitzungsverlauf] = useState([]); // Das ist die formale Mutationen-Tabelle
 
   const handleFileUpload = (event, type) => {
     const file = event.target.files[0];
@@ -213,7 +213,9 @@ export default function App() {
           uhrzeit: '',
           goAntraege: [],
           wahlen: [], 
-          antraege: [] 
+          antraege: [],
+          showSitzungsverlauf: false, // NEU: Ein-/Ausschalter für das Freitextfeld
+          sitzungsverlaufText: ''     // NEU: Freitext für inhaltliche Diskussion
         }));
         setTagesordnung(enrichedData);
       } else {
@@ -254,6 +256,20 @@ export default function App() {
     setTagesordnung(newTo);
   };
 
+  // --- Freitext Sitzungsverlauf (NEU) ---
+  const toggleSitzungsverlauf = (topIndex) => {
+    const newTo = [...tagesordnung];
+    newTo[topIndex].showSitzungsverlauf = !newTo[topIndex].showSitzungsverlauf;
+    setTagesordnung(newTo);
+  };
+
+  const updateSitzungsverlaufText = (topIndex, value) => {
+    const newTo = [...tagesordnung];
+    newTo[topIndex].sitzungsverlaufText = value;
+    setTagesordnung(newTo);
+  };
+
+  // --- GO Anträge ---
   const addGOAntrag = (topIndex) => {
     const newTo = [...tagesordnung];
     newTo[topIndex].goAntraege.push({
@@ -274,6 +290,7 @@ export default function App() {
     setTagesordnung(newTo);
   };
 
+  // --- Wahlen ---
   const addWahl = (topIndex) => {
     const newTo = [...tagesordnung];
     newTo[topIndex].wahlen.push({
@@ -321,10 +338,12 @@ export default function App() {
     setTagesordnung(newTo);
   };
 
+  // --- Mutationen Matrix (TOP 1) ---
   const addSitzungsverlauf = () => {
     setSitzungsverlauf([...sitzungsverlauf, { uhrzeit: '', vermerk: '' }]);
   };
 
+  // --- Abstimmungen Anträge ---
   const initAbstimmung = (topIndex, antragIndex) => {
     const newTo = [...tagesordnung];
     newTo[topIndex].antraege[antragIndex].abstimmung = {
@@ -539,6 +558,21 @@ export default function App() {
 
                 {!top.vertagt && (
                   <div className="p-4 space-y-6">
+                    
+                    {/* FREITEXT SITZUNGSVERLAUF (NEU) */}
+                    {top.showSitzungsverlauf && (
+                      <div className="bg-purple-50 border-l-4 border-purple-500 p-5 rounded-r-lg relative">
+                        <button onClick={() => toggleSitzungsverlauf(index)} className="absolute top-3 right-3 text-gray-400 hover:text-red-500"><Trash2 size={20}/></button>
+                        <h4 className="font-bold text-purple-800 mb-3 text-base uppercase">Sitzungsverlauf / Protokoll</h4>
+                        <textarea
+                          value={top.sitzungsverlaufText}
+                          onChange={e => updateSitzungsverlaufText(index, e.target.value)}
+                          className="w-full border border-purple-200 rounded p-3 text-base min-h-[150px] focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          placeholder="Hier den Diskussionsverlauf, Wortmeldungen und inhaltliche Anmerkungen eintragen..."
+                        />
+                      </div>
+                    )}
+
                     {top.antraege.length > 0 && (
                       <div className="space-y-4">
                         <h4 className="font-bold text-emerald-800 text-lg border-b border-emerald-100 pb-1">Zugehörige Anträge</h4>
@@ -679,6 +713,15 @@ export default function App() {
                       ))}
                       
                       <div className="flex flex-wrap gap-3 pt-3 border-t border-gray-200">
+                        {/* NEU: Option Button für den Sitzungsverlauf */}
+                        {!top.showSitzungsverlauf && (
+                          <button 
+                            onClick={() => toggleSitzungsverlauf(index)}
+                            className="flex items-center gap-2 text-base bg-purple-50 border border-purple-200 hover:bg-purple-100 text-purple-700 px-4 py-2 rounded font-bold transition"
+                          >
+                            <Plus size={18} /> Sitzungsverlauf erfassen
+                          </button>
+                        )}
                         <button 
                           onClick={() => addGOAntrag(index)}
                           className="flex items-center gap-2 text-base bg-orange-50 border border-orange-200 hover:bg-orange-100 text-orange-700 px-4 py-2 rounded font-bold transition"
@@ -938,6 +981,14 @@ export default function App() {
 
                 {!row.vertagt && row.text && (
                     <div className="item-text" dangerouslySetInnerHTML={{__html: row.text.replace(/\n/g, '<br/>')}}></div>
+                )}
+
+                {/* SITZUNGSVERLAUF (FREITEXT) IM PDF */}
+                {!row.vertagt && row.showSitzungsverlauf && row.sitzungsverlaufText && (
+                    <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+                        <h3 style={{color: '#005030'}}>Sitzungsverlauf</h3>
+                        <div className="item-text" dangerouslySetInnerHTML={{__html: row.sitzungsverlaufText.replace(/\n/g, '<br/>')}}></div>
+                    </div>
                 )}
 
                 {!row.vertagt && row.antraege && row.antraege.map((antrag, aIdx) => {
