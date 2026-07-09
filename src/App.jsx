@@ -184,7 +184,7 @@ export default function App() {
     redeleitung: '', 
     protokoll: '', 
     anhang: '',
-    raum: 'F007',
+    raum: 'A120',
     ort: 'Geschwister-Scholl-Platz 1'
   });
 
