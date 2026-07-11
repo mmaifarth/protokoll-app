@@ -744,7 +744,7 @@ export default function App() {
         <style dangerouslySetInnerHTML={{__html: `
           @page {
               size: A4;
-              margin: 30mm 20mm 25mm 20mm;
+              margin: 25mm 20mm 25mm 20mm;
               @bottom-center {
                   content: counter(page);
                   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -757,33 +757,25 @@ export default function App() {
           body, .hidden.print\\:block { background-color: transparent !important; }
           body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12pt; line-height: 1.5; color: #222; }
           
-          .global-watermark {
-              position: fixed;
-              top: 50%;
+          .cover-page { 
+              text-align: center; 
+              position: relative; 
+              min-height: 250mm; /* Sichert die Dimensionen für das mittige Siegel auf Seite 1 */
+              padding-top: 40mm;
+              page-break-after: always; 
+              background-color: transparent !important;
+              z-index: 10;
+          }
+
+          .cover-seal {
+              position: absolute;
+              top: 50%; /* Auf exakt 50% zentriert für feste optische Platzierung */
               left: 50%;
               transform: translate(-50%, -50%);
-              width: 70%;
-              opacity: 0.25;
+              width: 80%;
+              opacity: 1; /* Opake, fixe Grafik explizit nur für Seite 1 */
               z-index: -1;
               pointer-events: none;
-          }
-
-          .print-header-fixed {
-              position: fixed;
-              top: 0;
-              left: 0;
-              right: 0;
-              z-index: 500;
-          }
-
-          .header-mask {
-              position: absolute;
-              top: -30mm;
-              left: -20mm;
-              right: -20mm;
-              height: 80px;
-              background-color: white !important;
-              z-index: 600;
           }
 
           .print-layout-table {
@@ -792,7 +784,7 @@ export default function App() {
               margin: 0 !important;
           }
           .print-layout-table > thead {
-              display: table-header-group; 
+              display: table-header-group; /* Wiederholt den Header automatisch auf jeder neuen Seite der Tabelle */
           }
           .print-layout-table > tbody {
               display: table-row-group;
@@ -802,16 +794,6 @@ export default function App() {
               border: none !important;
               padding: 0 !important;
               background: transparent !important;
-          }
-
-          .cover-page { 
-              text-align: center; 
-              margin-top: 40mm; 
-              page-break-after: always; 
-              position: relative; 
-              padding-top: 20mm;
-              background-color: transparent !important;
-              z-index: 10;
           }
           
           .institution { font-size: 18pt; font-weight: bold; color: #005030; margin-bottom: 10mm; text-transform: uppercase; letter-spacing: 1px; }
@@ -835,11 +817,12 @@ export default function App() {
           .go-header { font-weight: bold; font-size: 11pt; color: #e65100; border-bottom: 1px solid #ffe0b2; padding-bottom: 6px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
           .go-content { font-size: 11pt; line-height: 1.5; margin-bottom: 6px; }
 
-          table { width: 100%; border-collapse: collapse; margin-bottom: 30px; page-break-inside: avoid; }
-          th, td { border: 1px solid #dddddd; padding: 10px; text-align: left; font-size: 11pt; }
-          th { background-color: #f2f2f2; }
+          table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; page-break-inside: avoid; }
+          table.data-table th, table.data-table td { border: 1px solid #dddddd; padding: 10px; text-align: left; font-size: 11pt; }
+          table.data-table th { background-color: #f2f2f2; }
 
-          .meta-table th { background-color: transparent; border: none; font-weight: bold; padding: 5px 10px 5px 0;}
+          .meta-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; page-break-inside: avoid; }
+          .meta-table th { background-color: transparent; border: none; font-weight: bold; padding: 5px 10px 5px 0; text-align: left;}
           .meta-table td { border: none; padding: 5px 0;}
           .meta-table tr { border-bottom: 1px solid #eeeeee; }
           .meta-table tr:last-child { border-bottom: none; }
@@ -852,24 +835,9 @@ export default function App() {
           .page-break { page-break-before: always; }
         `}} />
 
-        {/* GLOBALES WASSERZEICHEN */}
-        <img src="Siegel.png" className="global-watermark" alt="LMU Siegel" />
-
-        {/* FIXIERTE KOPFZEILE - Robustes Float-Layout gegen Chrome-Truncation-Bugs */}
-        <div className="print-header-fixed">
-          <div style={{ display: 'block', width: '100%', borderBottom: '1px solid #ddd', paddingBottom: '10px', height: '45px' }}>
-            <img src="Stuve Logo lang.png" alt="StuVe Logo" style={{ height: '35px', float: 'left' }} />
-            <div style={{ float: 'right', color: '#777', fontSize: '11pt', lineHeight: '35px' }}>
-              Protokoll der Sitzung am {formattedPrintDate()}
-            </div>
-            <div style={{ clear: 'both' }}></div>
-          </div>
-        </div>
-
-        {/* DECKBLATT */}
+        {/* DECKBLATT (Seite 1) */}
         <div className="cover-page">
-            {/* Maskiert die fixierte Kopfzeile nur auf Seite 1 */}
-            <div className="header-mask"></div>
+            <img src="Siegel.png" className="cover-seal" alt="LMU Siegel" />
             
             <div className="institution">Konvent der Fachschaften<br/>Ludwig-Maximilians-Universität München</div>
             <div className="title">Sitzungsprotokoll</div>
@@ -879,11 +847,27 @@ export default function App() {
             <div style={{fontSize: '13pt', marginTop: '15mm'}}><strong>Stand:</strong> {new Date().toLocaleDateString('de-DE')}</div>
         </div>
 
-        {/* HAUPTDOKUMENT */}
+        {/* HAUPTDOKUMENT (ab Seite 2) */}
         <table className="print-layout-table">
           <thead>
             <tr>
-              <td style={{ height: '70px', border: 'none', padding: 0 }}></td>
+              <td style={{ border: 'none', padding: 0 }}>
+                {/* Print Header, der durch table-header-group exakt ab Seite 2 auf jeder Seite wiederholt wird */}
+                <div style={{ paddingBottom: '2px' }}>
+                  <table style={{ width: '100%', borderBottom: '1px solid #ddd', marginBottom: '8px', paddingBottom: '4px' }}>
+                    <tbody>
+                      <tr>
+                        <td style={{ width: '50%', textAlign: 'left', border: 'none', padding: 0 }}>
+                          <img src="Stuve Logo lang.png" alt="StuVe Logo" style={{ height: '30px' }} />
+                        </td>
+                        <td style={{ width: '50%', textAlign: 'right', verticalAlign: 'bottom', border: 'none', padding: 0, color: '#777', fontSize: '10pt', whiteSpace: 'nowrap', paddingBottom: '2px' }}>
+                          Protokoll der Sitzung am {formattedPrintDate()}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </td>
             </tr>
           </thead>
           <tbody>
@@ -921,7 +905,6 @@ export default function App() {
               </td>
             </tr>
 
-            {/* JEDER TOP IST EINE EIGENE TABELLENZEILE */}
             {tagesordnung.map((row, index) => {
               const topNumStr = String(row.item_number).trim();
               const targetId = `top-${row.slug}`;
@@ -942,7 +925,7 @@ export default function App() {
                     {index === 0 && !row.vertagt && (
                       <>
                         <h3 style={{color: '#005030'}}>Anwesenheitsliste</h3>
-                        <table>
+                        <table className="data-table">
                             <thead>
                                 <tr>
                                     <th width="35%"></th>
@@ -978,7 +961,7 @@ export default function App() {
                         {sitzungsverlauf.length > 0 && (
                         <>
                           <h3 style={{color: '#005030'}}>Sitzungsverlauf</h3>
-                          <table>
+                          <table className="data-table">
                               <thead>
                                   <tr>
                                       <th width="20%">Uhrzeit</th>
@@ -1041,7 +1024,7 @@ export default function App() {
                             {antrag.abstimmung && (
                                 <>
                                 <h3>Abstimmungsergebnis</h3>
-                                <table>
+                                <table className="data-table">
                                     <thead>
                                         <tr>
                                             <th width="35%">Kategorie</th>
@@ -1083,7 +1066,7 @@ export default function App() {
                         {row.wahlen.map((wahl, wIdx) => (
                           <div className="wahl-box" key={wIdx}>
                             <div className="wahl-header">Wahlergebnis: {wahl.titel}</div>
-                            <table>
+                            <table className="data-table">
                               <thead>
                                 <tr>
                                   <th width="25%">Kandidat*in / Option</th>
