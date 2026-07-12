@@ -778,11 +778,14 @@ export default function App() {
           }
           
           .cover-page { 
+              display: flex;
+              flex-direction: column;
+              justify-content: center; /* Vertikale Zentrierung */
+              align-items: center;     /* Horizontale Zentrierung */
               text-align: center; 
               position: relative; 
               width: 100%;
-              min-height: 250mm; /* Sichert die Dimensionen für das mittige Siegel auf Seite 1 */
-              padding-top: 40mm;
+              height: 250mm; /* Fixe Höhe, um die exakte optische Mitte des A4-Blattes zu definieren */
               page-break-after: always; 
               background-color: transparent !important;
               z-index: 10;
@@ -823,9 +826,9 @@ export default function App() {
           }
           
           .institution { font-size: 18pt; font-weight: bold; color: #005030; margin-bottom: 10mm; text-transform: uppercase; letter-spacing: 1px; }
-          .title { font-size: 26pt; font-weight: bold; margin-bottom: 5mm; }
-          .subtitle { font-size: 18pt; color: #555555; margin-bottom: 30mm; }
-          .event-details { font-size: 13pt; color: #333333; margin-bottom: 3mm; line-height: 1.6; }
+          .title { font-size: 26pt; font-weight: bold; margin-bottom: 5mm; color: #000000; }
+          .subtitle { font-size: 18pt; color: #000000; margin-bottom: 20mm; font-weight: 500; }
+          .event-details { font-size: 14pt; color: #000000; margin-bottom: 3mm; line-height: 1.6; font-weight: 500; }
 
           h1 { font-size: 18pt; color: #005030; border-bottom: 2px solid #005030; padding-bottom: 5px; margin-top: 0; page-break-after: avoid; margin-bottom: 20px;}
           h2 { font-size: 15pt; margin-top: 25px; margin-bottom: 10px; page-break-after: avoid; }
@@ -912,7 +915,7 @@ export default function App() {
             <div className="subtitle">Sitzung am {formattedPrintDate()}</div>
             <div className="event-details">Ab {meta.beginn} Uhr c.t. in {meta.raum}</div>
             <div className="event-details">{meta.ort}</div>
-            <div style={{fontSize: '13pt', marginTop: '15mm'}}><strong>Stand:</strong> {new Date().toLocaleDateString('de-DE')}</div>
+            <div style={{fontSize: '14pt', marginTop: '15mm', color: '#000000', fontWeight: '500'}}><strong>Stand:</strong> {new Date().toLocaleDateString('de-DE')}</div>
         </div>
 
         {/* HAUPTDOKUMENT (ab Seite 2) */}
