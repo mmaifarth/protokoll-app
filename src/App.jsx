@@ -226,29 +226,43 @@ export default function App() {
   };
 
   useEffect(() => {
+    // Sicheres Merging beider Datensätze, unabhängig von der Upload-Reihenfolge
     if (tagesordnung.length > 0 && antraegeRaw.length > 0) {
-      setTagesordnung(prevTo => prevTo.map(top => {
-        const matchingAntraege = antraegeRaw.filter(a => 
-          (a.Titel || "").trim() === top.title ||
-          (a.TOP && String(a.TOP).trim() === String(top.item_number).trim()) ||
-          (a.item_number && String(a.item_number).trim() === String(top.item_number).trim())
-        ).map(a => ({
-          ...a,
-          Bezeichner: a.Bezeichner || '',
-          Antragsteller: a['Antragsteller*in'] || '',
-          Status: a.Status || '',
-          Text: a.Text || '',
-          Begründung: a.Begründung || '',
-          abstimmung: null
-        }));
+      setTagesordnung(prevTo => {
+        let stateChanged = false;
         
-        if (JSON.stringify(top.antraege) !== JSON.stringify(matchingAntraege) && top.antraege.length === 0) {
-            return { ...top, antraege: matchingAntraege };
-        }
-        return top;
-      }));
+        const newState = prevTo.map(top => {
+          const matchingAntraege = antraegeRaw.filter(a => 
+            (a.Titel || "").trim() === top.title ||
+            (a.TOP && String(a.TOP).trim() === String(top.item_number).trim()) ||
+            (a.item_number && String(a.item_number).trim() === String(top.item_number).trim())
+          ).map(a => {
+            // Bereits erfasste Abstimmungen beibehalten, falls vorhanden
+            const existing = top.antraege.find(ea => ea.Bezeichner === (a.Bezeichner || ''));
+            return {
+              ...a,
+              Bezeichner: a.Bezeichner || '',
+              Antragsteller: a['Antragsteller*in'] || a.Antragsteller || '', // Fallback für abweichende Header
+              Status: a.Status || '',
+              Text: a.Text || '',
+              Begründung: a.Begründung || '',
+              abstimmung: existing ? existing.abstimmung : null
+            };
+          });
+          
+          // Wir führen ein Update nur durch, wenn sich die injizierten Daten tatsächlich verändert haben
+          // Dies verhindert Endlosschleifen beim Neu-Rendern
+          if (JSON.stringify(top.antraege) !== JSON.stringify(matchingAntraege)) {
+              stateChanged = true;
+              return { ...top, antraege: matchingAntraege };
+          }
+          return top;
+        });
+        
+        return stateChanged ? newState : prevTo;
+      });
     }
-  }, [antraegeRaw]); 
+  }, [antraegeRaw, tagesordnung.length]); 
 
   const updateTop = (index, field, value) => {
     const newTo = [...tagesordnung];
@@ -777,29 +791,29 @@ export default function App() {
               color: #222; 
           }
           
+          /* Die überarbeitete Titelseite mit deterministischem Grid-Layout */
           .cover-page { 
-              display: flex;
-              flex-direction: column;
-              justify-content: center; /* Vertikale Zentrierung */
-              align-items: center;     /* Horizontale Zentrierung */
-              text-align: center; 
-              position: relative; 
+              display: grid;
+              place-items: center; /* Horizontale und vertikale Zentrierung */
               width: 100%;
-              height: 250mm; /* Fixe Höhe, um die exakte optische Mitte des A4-Blattes zu definieren */
+              height: 240mm; /* Minimal reduziert, um ungewollten Seitenumbruch-Konflikt mit der Tabelle zu vermeiden */
               page-break-after: always; 
+              break-after: page;
               background-color: transparent !important;
+          }
+
+          .cover-content {
+              grid-area: 1 / 1; /* Legt den Text exakt in dieselbe Zelle wie das Siegel */
+              text-align: center;
               z-index: 10;
           }
 
           .cover-seal {
-              position: absolute;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
+              grid-area: 1 / 1; /* Zwingt das Bild in dieselbe Grid-Zelle */
               width: 100%;
-              max-width: 600px; /* Zusätzlicher Schutz für große Siegel-Bilder */
-              opacity: 0.20; /* Opake, fixe Grafik explizit nur für Seite 1 */
-              z-index: -1;
+              max-width: 550px; /* Begrenzung des Überlaufs */
+              opacity: 0.15; /* Leicht reduziert für optimalen Schwarz-Kontrast */
+              z-index: 1;
               pointer-events: none;
           }
 
@@ -909,13 +923,14 @@ export default function App() {
         {/* DECKBLATT (Seite 1) */}
         <div className="cover-page">
             <img src="Siegel.png" className="cover-seal" alt="LMU Siegel" />
-            
-            <div className="institution">Konvent der Fachschaften<br/>Ludwig-Maximilians-Universität München</div>
-            <div className="title">Sitzungsprotokoll</div>
-            <div className="subtitle">Sitzung am {formattedPrintDate()}</div>
-            <div className="event-details">Ab {meta.beginn} Uhr c.t. in {meta.raum}</div>
-            <div className="event-details">{meta.ort}</div>
-            <div style={{fontSize: '14pt', marginTop: '15mm', color: '#000000', fontWeight: '500'}}><strong>Stand:</strong> {new Date().toLocaleDateString('de-DE')}</div>
+            <div className="cover-content">
+                <div className="institution">Konvent der Fachschaften<br/>Ludwig-Maximilians-Universität München</div>
+                <div className="title">Sitzungsprotokoll</div>
+                <div className="subtitle">Sitzung am {formattedPrintDate()}</div>
+                <div className="event-details">Ab {meta.beginn} Uhr c.t. in {meta.raum}</div>
+                <div className="event-details">{meta.ort}</div>
+                <div style={{fontSize: '14pt', marginTop: '15mm', color: '#000000', fontWeight: '500'}}><strong>Stand:</strong> {new Date().toLocaleDateString('de-DE')}</div>
+            </div>
         </div>
 
         {/* HAUPTDOKUMENT (ab Seite 2) */}
