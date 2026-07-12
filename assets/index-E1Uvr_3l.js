@@ -17,11 +17,27 @@ Error generating stack: `+e.message+`
                   color: #555555;
               }
           }
-          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          
+          /* Grundlegende Restriktionen zur Verhinderung von horizontalem Overflow */
+          * { 
+              -webkit-print-color-adjust: exact !important; 
+              print-color-adjust: exact !important; 
+              box-sizing: border-box !important;
+              max-width: 100% !important; /* Verhindert hart, dass ein Element breiter als die Seite wird */
+              overflow-wrap: break-word; /* Bricht zu lange Wörter notfalls hart um */
+              word-wrap: break-word;
+          }
           
           /* Explizites Erzwingen eines weißen Hintergrunds für alle übergeordneten Druck-Container */
           html, body, .hidden.print\\:block { background-color: #ffffff !important; }
-          body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12pt; line-height: 1.5; color: #222; }
+          body { 
+              font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+              font-size: 12pt; 
+              line-height: 1.5; 
+              color: #222; 
+              width: 100%; 
+              max-width: 100%;
+          }
           
           .cover-page { 
               text-align: center; 
@@ -83,13 +99,33 @@ Error generating stack: `+e.message+`
           .go-header { font-weight: bold; font-size: 11pt; color: #e65100; border-bottom: 1px solid #ffe0b2; padding-bottom: 6px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
           .go-content { font-size: 11pt; line-height: 1.5; margin-bottom: 6px; }
 
-          table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; page-break-inside: avoid; }
-          table.data-table th, table.data-table td { border: 1px solid #dddddd; padding: 10px; text-align: left; font-size: 11pt; }
+          table.data-table { 
+              width: 100%; 
+              max-width: 100%;
+              border-collapse: collapse; 
+              margin-bottom: 30px; 
+              page-break-inside: avoid; 
+              table-layout: fixed; /* ZWINGEND: Verhindert, dass Tabelleninhalte die Spaltenbreite sprengen */
+          }
+          table.data-table th, table.data-table td { 
+              border: 1px solid #dddddd; 
+              padding: 10px; 
+              text-align: left; 
+              font-size: 11pt; 
+              hyphens: auto; /* Erlaubt automatische Silbentrennung für lange deutsche Wörter */
+          }
           table.data-table th { background-color: #f2f2f2; }
 
-          .meta-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; page-break-inside: avoid; }
+          .meta-table { 
+              width: 100%; 
+              max-width: 100%;
+              border-collapse: collapse; 
+              margin-bottom: 30px; 
+              page-break-inside: avoid; 
+              table-layout: fixed; /* ZWINGEND: Layout strikt an Breitenangaben orientieren */
+          }
           .meta-table th { background-color: transparent; border: none; font-weight: bold; padding: 5px 10px 5px 0; text-align: left;}
-          .meta-table td { border: none; padding: 5px 0;}
+          .meta-table td { border: none; padding: 5px 0; hyphens: auto;}
           .meta-table tr { border-bottom: 1px solid #eeeeee; }
           .meta-table tr:last-child { border-bottom: none; }
 
