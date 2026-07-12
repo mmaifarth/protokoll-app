@@ -61,9 +61,9 @@ Error generating stack: `+e.message+`
               top: 50%; /* Auf exakt 50% zentriert für feste optische Platzierung */
               left: 50%;
               transform: translate(-50%, -50%);
-              width: 80%;
+              width: 100%;
               max-width: 600px; /* Zusätzlicher Schutz für große Siegel-Bilder */
-              opacity: 0.25; /* Opake, fixe Grafik explizit nur für Seite 1 */
+              opacity: 0.20; /* Opake, fixe Grafik explizit nur für Seite 1 */
               z-index: -1;
               pointer-events: none;
           }
