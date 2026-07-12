@@ -802,8 +802,10 @@ export default function App() {
 
           .print-layout-table {
               width: 100%;
+              max-width: 100%;
               border: none !important;
               margin: 0 !important;
+              table-layout: fixed; /* LÖSUNG: Zwingt die Haupttabelle, sich an die 100% zu halten */
           }
           .print-layout-table > thead {
               display: table-header-group; /* Wiederholt den Header automatisch auf jeder neuen Seite der Tabelle */
@@ -816,6 +818,8 @@ export default function App() {
               border: none !important;
               padding: 0 !important;
               background: transparent !important;
+              width: 100%; /* WICHTIG für das Fixed-Layout */
+              overflow-wrap: break-word !important; 
           }
           
           .institution { font-size: 18pt; font-weight: bold; color: #005030; margin-bottom: 10mm; text-transform: uppercase; letter-spacing: 1px; }
@@ -835,6 +839,10 @@ export default function App() {
               overflow-wrap: anywhere !important; 
               word-break: break-word !important; 
           }
+          
+          /* Schutz für injizierte HTML-Inhalte aus der CSV */
+          .item-text img, .antrag-box img { max-width: 100% !important; height: auto !important; }
+          .item-text pre, .item-text code { white-space: pre-wrap !important; word-wrap: break-word !important; }
 
           .antrag-box { background-color: #f4f7f6; border-left: 5px solid #005030; padding: 15px 20px; margin-top: 15px; margin-bottom: 20px; page-break-inside: avoid; }
           .antrag-header { font-weight: bold; font-size: 11pt; color: #005030; border-bottom: 1px solid #d0ded8; padding-bottom: 8px; margin-bottom: 12px; }
@@ -894,7 +902,7 @@ export default function App() {
           .page-break { page-break-before: always; }
         `}} />
 
-        {/* --- FLUID BODY (Kein .a4-print-box Wrapper mehr!) --- */}
+        {/* --- FLUID BODY --- */}
         {/* DECKBLATT (Seite 1) */}
         <div className="cover-page">
             <img src="Siegel.png" className="cover-seal" alt="LMU Siegel" />
