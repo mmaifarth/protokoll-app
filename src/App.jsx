@@ -376,7 +376,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 print:bg-white font-sans text-gray-800">
-      {/* Hinzufügen von print:bg-white zum Haupt-Container, um das bg-gray-50 im Druck zu überschreiben */}
       
       {/* EDITOR ANSICHT */}
       <div className="print:hidden max-w-5xl mx-auto p-6 space-y-8">
@@ -743,9 +742,11 @@ export default function App() {
       {/* DRUCK ANSICHT */}
       <div className="hidden print:block text-black min-h-screen">
         <style dangerouslySetInnerHTML={{__html: `
+          /* DIE LÖSUNG: Fluid Print Layout */
+          /* Ränder werden NATIV dem Browser übergeben, anstatt feste Pixel-Boxen zu simulieren */
           @page {
               size: A4;
-              margin: 0mm !important; /* LÖSUNG 2: Hebt Browser-Standardränder konsequent auf */
+              margin: 20mm 15mm 25mm 15mm !important; 
               @bottom-center {
                   content: counter(page);
                   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -759,34 +760,27 @@ export default function App() {
               -webkit-print-color-adjust: exact !important; 
               print-color-adjust: exact !important; 
               box-sizing: border-box !important;
-              max-width: 100% !important; /* Verhindert hart, dass ein Element breiter als die Seite wird */
-              overflow-wrap: break-word; /* Bricht zu lange Wörter notfalls hart um */
-              word-wrap: break-word;
+              max-width: 100% !important; 
           }
           
           /* Explizites Erzwingen eines weißen Hintergrunds für alle übergeordneten Druck-Container */
-          html, body, .hidden.print\\:block { background-color: #ffffff !important; }
+          html, body, .hidden.print\\:block { 
+              background-color: #ffffff !important; 
+              width: 100% !important; /* Relatives Skalieren statt fixer Millimeter */
+              margin: 0 !important;
+              padding: 0 !important;
+          }
           body { 
               font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
               font-size: 12pt; 
               line-height: 1.5; 
               color: #222; 
-              width: 100%; 
-              max-width: 100%;
-          }
-
-          /* --- NEU: DIN A4 BOUNDING BOX (Lösung 2) --- */
-          .a4-print-box {
-              width: 210mm !important; /* Volle A4-Breite, da das Padding nun die Einrückung übernimmt */
-              max-width: 210mm !important;
-              padding: 25mm 20mm 25mm 20mm !important; /* Übernimmt die Rolle der vorherigen @page-Margins */
-              margin: 0 auto; 
-              box-sizing: border-box !important;
           }
           
           .cover-page { 
               text-align: center; 
               position: relative; 
+              width: 100%;
               min-height: 250mm; /* Sichert die Dimensionen für das mittige Siegel auf Seite 1 */
               padding-top: 40mm;
               page-break-after: always; 
@@ -800,6 +794,7 @@ export default function App() {
               left: 50%;
               transform: translate(-50%, -50%);
               width: 80%;
+              max-width: 600px; /* Zusätzlicher Schutz für große Siegel-Bilder */
               opacity: 0.25; /* Opake, fixe Grafik explizit nur für Seite 1 */
               z-index: -1;
               pointer-events: none;
@@ -832,7 +827,14 @@ export default function App() {
           h2 { font-size: 15pt; margin-top: 25px; margin-bottom: 10px; page-break-after: avoid; }
           h3 { font-size: 12pt; text-transform: uppercase; color: #666666; margin-top: 15px; margin-bottom: 5px; page-break-after: avoid; }
 
-          .item-text { margin-bottom: 15px; text-align: justify; hyphens: auto;}
+          /* Aggressives Text-Wrapping für Freitexte (verhindert das Ausbrechen von URLs) */
+          .item-text { 
+              margin-bottom: 15px; 
+              text-align: justify; 
+              hyphens: auto;
+              overflow-wrap: anywhere !important; 
+              word-break: break-word !important; 
+          }
 
           .antrag-box { background-color: #f4f7f6; border-left: 5px solid #005030; padding: 15px 20px; margin-top: 15px; margin-bottom: 20px; page-break-inside: avoid; }
           .antrag-header { font-weight: bold; font-size: 11pt; color: #005030; border-bottom: 1px solid #d0ded8; padding-bottom: 8px; margin-bottom: 12px; }
@@ -852,12 +854,16 @@ export default function App() {
               page-break-inside: avoid; 
               table-layout: fixed; /* ZWINGEND: Verhindert, dass Tabelleninhalte die Spaltenbreite sprengen */
           }
+          
+          /* Aggressives Text-Wrapping für Tabellenzellen (verhindert URL-Overflow) */
           table.data-table th, table.data-table td { 
               border: 1px solid #dddddd; 
               padding: 10px; 
               text-align: left; 
               font-size: 11pt; 
-              hyphens: auto; /* Erlaubt automatische Silbentrennung für lange deutsche Wörter */
+              hyphens: auto; 
+              overflow-wrap: anywhere !important; 
+              word-break: break-word !important; 
           }
           table.data-table th { background-color: #f2f2f2; }
 
@@ -867,10 +873,16 @@ export default function App() {
               border-collapse: collapse; 
               margin-bottom: 30px; 
               page-break-inside: avoid; 
-              table-layout: fixed; /* ZWINGEND: Layout strikt an Breitenangaben orientieren */
+              table-layout: fixed; 
           }
           .meta-table th { background-color: transparent; border: none; font-weight: bold; padding: 5px 10px 5px 0; text-align: left;}
-          .meta-table td { border: none; padding: 5px 0; hyphens: auto;}
+          .meta-table td { 
+              border: none; 
+              padding: 5px 0; 
+              hyphens: auto;
+              overflow-wrap: anywhere !important; 
+              word-break: break-word !important; 
+          }
           .meta-table tr { border-bottom: 1px solid #eeeeee; }
           .meta-table tr:last-child { border-bottom: none; }
 
@@ -882,286 +894,284 @@ export default function App() {
           .page-break { page-break-before: always; }
         `}} />
 
-        {/* --- WRAPPER FÜR DIE A4 BOUNDING BOX --- */}
-        <div className="a4-print-box">
-          {/* DECKBLATT (Seite 1) */}
-          <div className="cover-page">
-              <img src="Siegel.png" className="cover-seal" alt="LMU Siegel" />
-              
-              <div className="institution">Konvent der Fachschaften<br/>Ludwig-Maximilians-Universität München</div>
-              <div className="title">Sitzungsprotokoll</div>
-              <div className="subtitle">Sitzung am {formattedPrintDate()}</div>
-              <div className="event-details">Ab {meta.beginn} Uhr c.t. in {meta.raum}</div>
-              <div className="event-details">{meta.ort}</div>
-              <div style={{fontSize: '13pt', marginTop: '15mm'}}><strong>Stand:</strong> {new Date().toLocaleDateString('de-DE')}</div>
-          </div>
+        {/* --- FLUID BODY (Kein .a4-print-box Wrapper mehr!) --- */}
+        {/* DECKBLATT (Seite 1) */}
+        <div className="cover-page">
+            <img src="Siegel.png" className="cover-seal" alt="LMU Siegel" />
+            
+            <div className="institution">Konvent der Fachschaften<br/>Ludwig-Maximilians-Universität München</div>
+            <div className="title">Sitzungsprotokoll</div>
+            <div className="subtitle">Sitzung am {formattedPrintDate()}</div>
+            <div className="event-details">Ab {meta.beginn} Uhr c.t. in {meta.raum}</div>
+            <div className="event-details">{meta.ort}</div>
+            <div style={{fontSize: '13pt', marginTop: '15mm'}}><strong>Stand:</strong> {new Date().toLocaleDateString('de-DE')}</div>
+        </div>
 
-          {/* HAUPTDOKUMENT (ab Seite 2) */}
-          <table className="print-layout-table">
-            <thead>
-              <tr>
-                <td style={{ border: 'none', padding: 0 }}>
-                  {/* Print Header, der durch table-header-group exakt ab Seite 2 auf jeder Seite wiederholt wird */}
-                  <div style={{ paddingBottom: '2px' }}>
-                    <table style={{ width: '100%', borderBottom: '1px solid #ddd', marginBottom: '8px', paddingBottom: '4px' }}>
+        {/* HAUPTDOKUMENT (ab Seite 2) */}
+        <table className="print-layout-table">
+          <thead>
+            <tr>
+              <td style={{ border: 'none', padding: 0 }}>
+                {/* Print Header, der durch table-header-group exakt ab Seite 2 auf jeder Seite wiederholt wird */}
+                <div style={{ paddingBottom: '2px' }}>
+                  <table style={{ width: '100%', borderBottom: '1px solid #ddd', marginBottom: '8px', paddingBottom: '4px', tableLayout: 'fixed' }}>
+                    <tbody>
+                      <tr>
+                        <td style={{ width: '50%', textAlign: 'left', border: 'none', padding: 0 }}>
+                          <img src="Stuve Logo lang.png" alt="StuVe Logo" style={{ height: '30px' }} />
+                        </td>
+                        <td style={{ width: '50%', textAlign: 'right', verticalAlign: 'bottom', border: 'none', padding: 0, color: '#777', fontSize: '10pt', whiteSpace: 'nowrap', paddingBottom: '2px' }}>
+                          Protokoll der Sitzung am {formattedPrintDate()}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ border: 'none', padding: 0, paddingBottom: '30px' }}>
+                  <h1>Sitzungsübersicht</h1>
+                  <table className="meta-table">
                       <tbody>
-                        <tr>
-                          <td style={{ width: '50%', textAlign: 'left', border: 'none', padding: 0 }}>
-                            <img src="Stuve Logo lang.png" alt="StuVe Logo" style={{ height: '30px' }} />
-                          </td>
-                          <td style={{ width: '50%', textAlign: 'right', verticalAlign: 'bottom', border: 'none', padding: 0, color: '#777', fontSize: '10pt', whiteSpace: 'nowrap', paddingBottom: '2px' }}>
-                            Protokoll der Sitzung am {formattedPrintDate()}
-                          </td>
-                        </tr>
+                        <tr><th width="30%">Datum</th><td width="70%">{formattedPrintDate()}</td></tr>
+                        <tr><th>Beginn</th><td>{meta.beginn} Uhr</td></tr>
+                        <tr><th>Ende</th><td>{meta.ende ? `${meta.ende} Uhr` : ''}</td></tr>
+                        <tr><th>Redeleitung</th><td>{meta.redeleitung}</td></tr>
+                        <tr><th>Protokoll</th><td>{meta.protokoll}</td></tr>
+                        {meta.anhang && <tr><th>Anhang</th><td>{meta.anhang}</td></tr>}
                       </tbody>
-                    </table>
-                  </div>
-                </td>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style={{ border: 'none', padding: 0, paddingBottom: '30px' }}>
-                    <h1>Sitzungsübersicht</h1>
-                    <table className="meta-table">
-                        <tbody>
-                          <tr><th width="30%">Datum</th><td width="70%">{formattedPrintDate()}</td></tr>
-                          <tr><th>Beginn</th><td>{meta.beginn} Uhr</td></tr>
-                          <tr><th>Ende</th><td>{meta.ende ? `${meta.ende} Uhr` : ''}</td></tr>
-                          <tr><th>Redeleitung</th><td>{meta.redeleitung}</td></tr>
-                          <tr><th>Protokoll</th><td>{meta.protokoll}</td></tr>
-                          {meta.anhang && <tr><th>Anhang</th><td>{meta.anhang}</td></tr>}
-                        </tbody>
-                    </table>
+                  </table>
 
-                    <h2 style={{marginTop: '40px'}}>Inhaltsverzeichnis</h2>
-                    <ul className="toc-list">
-                        {tagesordnung.map((row, i) => {
-                            const targetId = `top-${row.slug}`;
-                            return (
-                              <li key={i} className="toc-item">
-                                <a href={`#${targetId}`} className="toc-link">{row.item_number}: {row.title}</a>
-                                {row.vertagt && <em style={{color: '#e65100', marginLeft: '8px', fontWeight:'normal'}}>(Vertagt)</em>}
-                                <div className="toc-dots"></div>
-                              </li>
-                            );
-                        })}
-                    </ul>
+                  <h2 style={{marginTop: '40px'}}>Inhaltsverzeichnis</h2>
+                  <ul className="toc-list">
+                      {tagesordnung.map((row, i) => {
+                          const targetId = `top-${row.slug}`;
+                          return (
+                            <li key={i} className="toc-item">
+                              <a href={`#${targetId}`} className="toc-link">{row.item_number}: {row.title}</a>
+                              {row.vertagt && <em style={{color: '#e65100', marginLeft: '8px', fontWeight:'normal'}}>(Vertagt)</em>}
+                              <div className="toc-dots"></div>
+                            </li>
+                          );
+                      })}
+                  </ul>
 
-                    <div className="page-break"></div>
+                  <div className="page-break"></div>
 
-                    <h1>Tagesordnung und Protokoll</h1>
-                </td>
-              </tr>
+                  <h1>Tagesordnung und Protokoll</h1>
+              </td>
+            </tr>
 
-              {tagesordnung.map((row, index) => {
-                const topNumStr = String(row.item_number).trim();
-                const targetId = `top-${row.slug}`;
-                
-                return (
-                  <tr key={index}>
-                    <td style={{ border: 'none', padding: 0, paddingBottom: '30px' }}>
-                      <h2 id={targetId}>
-                        {topNumStr}: {row.title}
-                        {row.vertagt && <span style={{color: '#e65100', marginLeft: '10px'}}> [Vertagt]</span>}
-                        {!row.vertagt && isHauptTop(topNumStr) && row.uhrzeit && (
-                          <span style={{fontSize: '12pt', color: '#555', fontWeight: 'normal', marginLeft: '10px'}}>
-                            (ab {row.uhrzeit} Uhr)
-                          </span>
-                        )}
-                      </h2>
+            {tagesordnung.map((row, index) => {
+              const topNumStr = String(row.item_number).trim();
+              const targetId = `top-${row.slug}`;
+              
+              return (
+                <tr key={index}>
+                  <td style={{ border: 'none', padding: 0, paddingBottom: '30px' }}>
+                    <h2 id={targetId}>
+                      {topNumStr}: {row.title}
+                      {row.vertagt && <span style={{color: '#e65100', marginLeft: '10px'}}> [Vertagt]</span>}
+                      {!row.vertagt && isHauptTop(topNumStr) && row.uhrzeit && (
+                        <span style={{fontSize: '12pt', color: '#555', fontWeight: 'normal', marginLeft: '10px'}}>
+                          (ab {row.uhrzeit} Uhr)
+                        </span>
+                      )}
+                    </h2>
 
-                      {index === 0 && !row.vertagt && (
+                    {index === 0 && !row.vertagt && (
+                      <>
+                        <h3 style={{color: '#005030'}}>Anwesenheitsliste</h3>
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    <th width="35%"></th>
+                                    <th width="65%">Fachschaften</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Anwesende Fachschaften</strong></td>
+                                    <td>{top1Anwesend.join(', ')}<br/><small>Anzahl gesamt: {top1Anwesend.length}</small></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Beschlussfähigkeit (Anwesende Fachschaften &ge; 24)</strong></td>
+                                    <td style={{fontWeight: 'bold', color: top1Anwesend.length >= 24 ? '#005030' : '#b50000'}}>
+                                        {top1Anwesend.length >= 24 ? 'Ja' : 'Nein'}
+                                    </td>
+                                </tr>
+                                {top1Entschuldigt.length > 0 && (
+                                <tr>
+                                    <td><strong>Entschuldigt</strong></td>
+                                    <td>{top1Entschuldigt.join(', ')}</td>
+                                </tr>
+                                )}
+                                {top1Ausgeschlossen.length > 0 && (
+                                <tr>
+                                    <td><strong>Ausgeschlossen gemäß § 52 (4) Satz 2 Grundordnung</strong></td>
+                                    <td>{top1Ausgeschlossen.join(', ')}</td>
+                                </tr>
+                                )}
+                            </tbody>
+                        </table>
+
+                        {sitzungsverlauf.length > 0 && (
                         <>
-                          <h3 style={{color: '#005030'}}>Anwesenheitsliste</h3>
+                          <h3 style={{color: '#005030'}}>Sitzungsverlauf</h3>
                           <table className="data-table">
                               <thead>
                                   <tr>
-                                      <th width="35%"></th>
-                                      <th width="65%">Fachschaften</th>
+                                      <th width="20%">Uhrzeit</th>
+                                      <th width="80%">Ereignisvermerk</th>
                                   </tr>
                               </thead>
                               <tbody>
-                                  <tr>
-                                      <td><strong>Anwesende Fachschaften</strong></td>
-                                      <td>{top1Anwesend.join(', ')}<br/><small>Anzahl gesamt: {top1Anwesend.length}</small></td>
+                                  {sitzungsverlauf.map((v, i) => (
+                                  <tr key={i}>
+                                      <td><strong>{v.uhrzeit} Uhr</strong></td>
+                                      <td>{v.vermerk}</td>
                                   </tr>
-                                  <tr>
-                                      <td><strong>Beschlussfähigkeit (Anwesende Fachschaften &ge; 24)</strong></td>
-                                      <td style={{fontWeight: 'bold', color: top1Anwesend.length >= 24 ? '#005030' : '#b50000'}}>
-                                          {top1Anwesend.length >= 24 ? 'Ja' : 'Nein'}
-                                      </td>
-                                  </tr>
-                                  {top1Entschuldigt.length > 0 && (
-                                  <tr>
-                                      <td><strong>Entschuldigt</strong></td>
-                                      <td>{top1Entschuldigt.join(', ')}</td>
-                                  </tr>
-                                  )}
-                                  {top1Ausgeschlossen.length > 0 && (
-                                  <tr>
-                                      <td><strong>Ausgeschlossen gemäß § 52 (4) Satz 2 Grundordnung</strong></td>
-                                      <td>{top1Ausgeschlossen.join(', ')}</td>
-                                  </tr>
-                                  )}
+                                  ))}
                               </tbody>
                           </table>
+                        </>
+                        )}
+                      </>
+                    )}
 
-                          {sitzungsverlauf.length > 0 && (
-                          <>
+                    {!row.vertagt && row.text && (
+                        <div className="item-text" dangerouslySetInnerHTML={{__html: row.text.replace(/\n/g, '<br/>')}}></div>
+                    )}
+
+                    {!row.vertagt && row.showSitzungsverlauf && row.sitzungsverlaufText && (
+                        <div style={{ marginTop: '20px', marginBottom: '20px' }}>
                             <h3 style={{color: '#005030'}}>Sitzungsverlauf</h3>
-                            <table className="data-table">
-                                <thead>
-                                    <tr>
-                                        <th width="20%">Uhrzeit</th>
-                                        <th width="80%">Ereignisvermerk</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {sitzungsverlauf.map((v, i) => (
-                                    <tr key={i}>
-                                        <td><strong>{v.uhrzeit} Uhr</strong></td>
-                                        <td>{v.vermerk}</td>
-                                    </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                          </>
-                          )}
-                        </>
-                      )}
+                            <div className="item-text" dangerouslySetInnerHTML={{__html: row.sitzungsverlaufText.replace(/\n/g, '<br/>')}}></div>
+                        </div>
+                    )}
 
-                      {!row.vertagt && row.text && (
-                          <div className="item-text" dangerouslySetInnerHTML={{__html: row.text.replace(/\n/g, '<br/>')}}></div>
-                      )}
+                    {!row.vertagt && row.antraege && row.antraege.map((antrag, aIdx) => {
+                      
+                      let totalFs = 0, totalW = 0;
+                      if (antrag.abstimmung) {
+                        totalFs = antrag.abstimmung.fuer.fs + antrag.abstimmung.gegen.fs + antrag.abstimmung.enthaltung.fs;
+                        totalW = antrag.abstimmung.fuer.weight + antrag.abstimmung.gegen.weight + antrag.abstimmung.enthaltung.weight;
+                      }
 
-                      {!row.vertagt && row.showSitzungsverlauf && row.sitzungsverlaufText && (
-                          <div style={{ marginTop: '20px', marginBottom: '20px' }}>
-                              <h3 style={{color: '#005030'}}>Sitzungsverlauf</h3>
-                              <div className="item-text" dangerouslySetInnerHTML={{__html: row.sitzungsverlaufText.replace(/\n/g, '<br/>')}}></div>
-                          </div>
-                      )}
-
-                      {!row.vertagt && row.antraege && row.antraege.map((antrag, aIdx) => {
-                        
-                        let totalFs = 0, totalW = 0;
-                        if (antrag.abstimmung) {
-                          totalFs = antrag.abstimmung.fuer.fs + antrag.abstimmung.gegen.fs + antrag.abstimmung.enthaltung.fs;
-                          totalW = antrag.abstimmung.fuer.weight + antrag.abstimmung.gegen.weight + antrag.abstimmung.enthaltung.weight;
-                        }
-
-                        return (
-                          <div className="antrag-box" key={aIdx}>
-                              <div className="antrag-header">
-                                  Antrag {topNumStr}: {antrag.Bezeichner} | Einreichend: {antrag.Antragsteller} | Status: {antrag.Status}
-                              </div>
-
-                              {antrag.Text && (
-                                <>
-                                  <h3>Antragstext / Beschlussfassung</h3>
-                                  <div className="item-text" dangerouslySetInnerHTML={{__html: antrag.Text.replace(/\n/g, '<br/>')}}></div>
-                                </>
-                              )}
-
-                              {antrag.Begründung && (
-                                <>
-                                  <h3>Begründung</h3>
-                                  <div className="item-text" dangerouslySetInnerHTML={{__html: antrag.Begründung.replace(/\n/g, '<br/>')}}></div>
-                                </>
-                              )}
-
-                              {antrag.abstimmung && (
-                                  <>
-                                  <h3>Abstimmungsergebnis</h3>
-                                  <table className="data-table">
-                                      <thead>
-                                          <tr>
-                                              <th width="35%">Kategorie</th>
-                                              <th width="32.5%">Anzahl Fachschaften</th>
-                                              <th width="32.5%">Anzahl Stimmgewichte</th>
-                                          </tr>
-                                      </thead>
-                                      <tbody>
-                                          <tr>
-                                              <td><strong>Fürstimmen</strong></td>
-                                              <td>{antrag.abstimmung.fuer.fs} ({calculateShare(antrag.abstimmung.fuer.fs, totalFs)}%)</td>
-                                              <td>{antrag.abstimmung.fuer.weight} ({calculateShare(antrag.abstimmung.fuer.weight, totalW)}%)</td>
-                                          </tr>
-                                          <tr>
-                                              <td><strong>Gegenstimmen</strong></td>
-                                              <td>{antrag.abstimmung.gegen.fs} ({calculateShare(antrag.abstimmung.gegen.fs, totalFs)}%)</td>
-                                              <td>{antrag.abstimmung.gegen.weight} ({calculateShare(antrag.abstimmung.gegen.weight, totalW)}%)</td>
-                                          </tr>
-                                          <tr>
-                                              <td><strong>Enthaltungen</strong></td>
-                                              <td>{antrag.abstimmung.enthaltung.fs} ({calculateShare(antrag.abstimmung.enthaltung.fs, totalFs)}%)</td>
-                                              <td>{antrag.abstimmung.enthaltung.weight} ({calculateShare(antrag.abstimmung.enthaltung.weight, totalW)}%)</td>
-                                          </tr>
-                                          <tr>
-                                              <td><strong>Gesamt</strong></td>
-                                              <td>{totalFs}</td>
-                                              <td>{totalW}</td>
-                                          </tr>
-                                      </tbody>
-                                  </table>
-                                  </>
-                              )}
-                          </div>
-                        );
-                      })}
-
-                      {!row.vertagt && row.wahlen && row.wahlen.length > 0 && (
-                        <>
-                          {row.wahlen.map((wahl, wIdx) => (
-                            <div className="wahl-box" key={wIdx}>
-                              <div className="wahl-header">Wahlergebnis: {wahl.titel}</div>
-                              <table className="data-table">
-                                <thead>
-                                  <tr>
-                                    <th width="25%">Kandidat*in / Option</th>
-                                    <th width="25%">Fürstimmen<br/><small>(FS / Gewichte)</small></th>
-                                    <th width="25%">Gegenstimmen<br/><small>(FS / Gewichte)</small></th>
-                                    <th width="25%">Enthaltungen<br/><small>(FS / Gewichte)</small></th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {wahl.kandidaten.map((k, kIdx) => (
-                                    <tr key={kIdx}>
-                                      <td><strong>{k.name}</strong></td>
-                                      <td>{k.fuer.fs} / {k.fuer.weight}</td>
-                                      <td>{k.gegen.fs} / {k.gegen.weight}</td>
-                                      <td>{k.enthaltung.fs} / {k.enthaltung.weight}</td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
+                      return (
+                        <div className="antrag-box" key={aIdx}>
+                            <div className="antrag-header">
+                                Antrag {topNumStr}: {antrag.Bezeichner} | Einreichend: {antrag.Antragsteller} | Status: {antrag.Status}
                             </div>
-                          ))}
-                        </>
-                      )}
 
-                      {!row.vertagt && row.goAntraege && row.goAntraege.length > 0 && (
-                          <div className="go-box">
-                              <div className="go-header">Antrag zur Geschäftsordnung</div>
-                              {row.goAntraege.map((go, gIdx) => (
-                                  <div key={gIdx} className="go-content">
-                                      <strong>Einreichend:</strong> {go.einreichend}<br/>
-                                      <strong>Uhrzeit:</strong> {go.uhrzeit} Uhr<br/>
-                                      <strong>Antrag:</strong> {go.antrag}<br/>
-                                      <strong>Gegenrede:</strong> {go.gegenrede}<br/>
-                                      <strong>Abstimmungsergebnis:</strong> {go.ergebnis}
-                                      {gIdx < row.goAntraege.length - 1 && <hr style={{borderTop: '1px dashed #ffe0b2', margin: '8px 0'}} />}
-                                  </div>
-                              ))}
+                            {antrag.Text && (
+                              <>
+                                <h3>Antragstext / Beschlussfassung</h3>
+                                <div className="item-text" dangerouslySetInnerHTML={{__html: antrag.Text.replace(/\n/g, '<br/>')}}></div>
+                              </>
+                            )}
+
+                            {antrag.Begründung && (
+                              <>
+                                <h3>Begründung</h3>
+                                <div className="item-text" dangerouslySetInnerHTML={{__html: antrag.Begründung.replace(/\n/g, '<br/>')}}></div>
+                              </>
+                            )}
+
+                            {antrag.abstimmung && (
+                                <>
+                                <h3>Abstimmungsergebnis</h3>
+                                <table className="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th width="35%">Kategorie</th>
+                                            <th width="32.5%">Anzahl Fachschaften</th>
+                                            <th width="32.5%">Anzahl Stimmgewichte</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Fürstimmen</strong></td>
+                                            <td>{antrag.abstimmung.fuer.fs} ({calculateShare(antrag.abstimmung.fuer.fs, totalFs)}%)</td>
+                                            <td>{antrag.abstimmung.fuer.weight} ({calculateShare(antrag.abstimmung.fuer.weight, totalW)}%)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Gegenstimmen</strong></td>
+                                            <td>{antrag.abstimmung.gegen.fs} ({calculateShare(antrag.abstimmung.gegen.fs, totalFs)}%)</td>
+                                            <td>{antrag.abstimmung.gegen.weight} ({calculateShare(antrag.abstimmung.gegen.weight, totalW)}%)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Enthaltungen</strong></td>
+                                            <td>{antrag.abstimmung.enthaltung.fs} ({calculateShare(antrag.abstimmung.enthaltung.fs, totalFs)}%)</td>
+                                            <td>{antrag.abstimmung.enthaltung.weight} ({calculateShare(antrag.abstimmung.enthaltung.weight, totalW)}%)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Gesamt</strong></td>
+                                            <td>{totalFs}</td>
+                                            <td>{totalW}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                </>
+                            )}
+                        </div>
+                      );
+                    })}
+
+                    {!row.vertagt && row.wahlen && row.wahlen.length > 0 && (
+                      <>
+                        {row.wahlen.map((wahl, wIdx) => (
+                          <div className="wahl-box" key={wIdx}>
+                            <div className="wahl-header">Wahlergebnis: {wahl.titel}</div>
+                            <table className="data-table">
+                              <thead>
+                                <tr>
+                                  <th width="25%">Kandidat*in / Option</th>
+                                  <th width="25%">Fürstimmen<br/><small>(FS / Gewichte)</small></th>
+                                  <th width="25%">Gegenstimmen<br/><small>(FS / Gewichte)</small></th>
+                                  <th width="25%">Enthaltungen<br/><small>(FS / Gewichte)</small></th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {wahl.kandidaten.map((k, kIdx) => (
+                                  <tr key={kIdx}>
+                                    <td><strong>{k.name}</strong></td>
+                                    <td>{k.fuer.fs} / {k.fuer.weight}</td>
+                                    <td>{k.gegen.fs} / {k.gegen.weight}</td>
+                                    <td>{k.enthaltung.fs} / {k.enthaltung.weight}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                        ))}
+                      </>
+                    )}
+
+                    {!row.vertagt && row.goAntraege && row.goAntraege.length > 0 && (
+                        <div className="go-box">
+                            <div className="go-header">Antrag zur Geschäftsordnung</div>
+                            {row.goAntraege.map((go, gIdx) => (
+                                <div key={gIdx} className="go-content">
+                                    <strong>Einreichend:</strong> {go.einreichend}<br/>
+                                    <strong>Uhrzeit:</strong> {go.uhrzeit} Uhr<br/>
+                                    <strong>Antrag:</strong> {go.antrag}<br/>
+                                    <strong>Gegenrede:</strong> {go.gegenrede}<br/>
+                                    <strong>Abstimmungsergebnis:</strong> {go.ergebnis}
+                                    {gIdx < row.goAntraege.length - 1 && <hr style={{borderTop: '1px dashed #ffe0b2', margin: '8px 0'}} />}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
