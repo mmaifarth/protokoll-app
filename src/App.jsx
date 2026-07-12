@@ -854,9 +854,10 @@ export default function App() {
           .subtitle { font-size: 18pt; color: #000000; margin-bottom: 20mm; font-weight: 500; }
           .event-details { font-size: 14pt; color: #000000; margin-bottom: 3mm; line-height: 1.6; font-weight: 500; }
 
-          h1 { font-size: 18pt; color: #005030; border-bottom: 2px solid #005030; padding-bottom: 5px; margin-top: 0; page-break-after: avoid; margin-bottom: 20px;}
-          h2 { font-size: 15pt; margin-top: 25px; margin-bottom: 10px; page-break-after: avoid; }
-          h3 { font-size: 12pt; text-transform: uppercase; color: #666666; margin-top: 15px; margin-bottom: 5px; page-break-after: avoid; }
+          /* Anpassung der Überschriften zur Verhinderung von unerwünschten Seitenumbrüchen (Widows/Orphans) */
+          h1 { font-size: 18pt; color: #005030; border-bottom: 2px solid #005030; padding-bottom: 5px; margin-top: 0; page-break-after: avoid; break-after: avoid; page-break-inside: avoid; break-inside: avoid; margin-bottom: 20px;}
+          h2 { font-size: 15pt; margin-top: 25px; margin-bottom: 10px; page-break-after: avoid; break-after: avoid; page-break-inside: avoid; break-inside: avoid; }
+          h3 { font-size: 12pt; text-transform: uppercase; color: #666666; margin-top: 15px; margin-bottom: 5px; page-break-after: avoid; break-after: avoid; page-break-inside: avoid; break-inside: avoid; }
 
           /* Aggressives Text-Wrapping für Freitexte (verhindert das Ausbrechen von URLs) */
           .item-text { 
@@ -1159,8 +1160,8 @@ export default function App() {
 
                     {!row.vertagt && row.wahlen && row.wahlen.length > 0 && (
                       <>
-                        {row.wahlen.map((wahl, wIdx) => (
-                          <div className="wahl-box" key={wIdx}>
+                        {row.wahlen.map((wahl, wIndex) => (
+                          <div className="wahl-box" key={wIndex}>
                             <div className="wahl-header">Wahlergebnis: {wahl.titel}</div>
                             <table className="data-table">
                               <thead>
@@ -1172,12 +1173,32 @@ export default function App() {
                                 </tr>
                               </thead>
                               <tbody>
-                                {wahl.kandidaten.map((k, kIdx) => (
-                                  <tr key={kIdx}>
-                                    <td><strong>{k.name}</strong></td>
-                                    <td>{k.fuer.fs} / {k.fuer.weight}</td>
-                                    <td>{k.gegen.fs} / {k.gegen.weight}</td>
-                                    <td>{k.enthaltung.fs} / {k.enthaltung.weight}</td>
+                                {wahl.kandidaten.map((k, kIndex) => (
+                                  <tr key={kIndex} className="border-b border-blue-100 last:border-0">
+                                    <td className="p-1">
+                                      <input type="text" value={k.name} onChange={e => updateKandidat(index, wIndex, kIndex, 'name', null, e.target.value)} className="w-full border-gray-300 rounded p-2" placeholder="Name..." />
+                                    </td>
+                                    <td className="p-1">
+                                      <div className="flex gap-1 justify-center">
+                                        <input type="number" min="0" value={k.fuer.fs} onChange={e => updateKandidat(index, wIndex, kIndex, 'fuer', 'fs', e.target.value)} className="w-14 border-gray-300 rounded p-2 text-center" title="Fachschaften" />
+                                        <input type="number" min="0" value={k.fuer.weight} onChange={e => updateKandidat(index, wIndex, kIndex, 'fuer', 'weight', e.target.value)} className="w-16 border-gray-300 rounded p-2 text-center bg-gray-50" title="Stimmgewichte" />
+                                      </div>
+                                    </td>
+                                    <td className="p-1">
+                                      <div className="flex gap-1 justify-center">
+                                        <input type="number" min="0" value={k.gegen.fs} onChange={e => updateKandidat(index, wIndex, kIndex, 'gegen', 'fs', e.target.value)} className="w-14 border-gray-300 rounded p-2 text-center" title="Fachschaften" />
+                                        <input type="number" min="0" value={k.gegen.weight} onChange={e => updateKandidat(index, wIndex, kIndex, 'gegen', 'weight', e.target.value)} className="w-16 border-gray-300 rounded p-2 text-center bg-gray-50" title="Stimmgewichte" />
+                                      </div>
+                                    </td>
+                                    <td className="p-1">
+                                      <div className="flex gap-1 justify-center">
+                                        <input type="number" min="0" value={k.enthaltung.fs} onChange={e => updateKandidat(index, wIndex, kIndex, 'enthaltung', 'fs', e.target.value)} className="w-14 border-gray-300 rounded p-2 text-center" title="Fachschaften" />
+                                        <input type="number" min="0" value={k.enthaltung.weight} onChange={e => updateKandidat(index, wIndex, kIndex, 'enthaltung', 'weight', e.target.value)} className="w-16 border-gray-300 rounded p-2 text-center bg-gray-50" title="Stimmgewichte" />
+                                      </div>
+                                    </td>
+                                    <td className="p-1 text-center">
+                                      <button onClick={() => removeKandidat(index, wIndex, kIndex)} className="text-red-400 hover:text-red-600"><Trash2 size={20}/></button>
+                                    </td>
                                   </tr>
                                 ))}
                               </tbody>
