@@ -825,7 +825,7 @@ export default function App() {
               overflow-wrap: break-word !important; 
           }
           
-          .institution { font-size: 18pt; font-weight: bold; color: #005030; margin-bottom: 10mm; text-transform: uppercase; letter-spacing: 1px; }
+          .institution { font-size: 24pt; font-weight: bold; color: #005030; margin-bottom: 10mm; text-transform: uppercase; letter-spacing: 1px; }
           .title { font-size: 26pt; font-weight: bold; margin-bottom: 5mm; color: #000000; }
           .subtitle { font-size: 18pt; color: #000000; margin-bottom: 20mm; font-weight: 500; }
           .event-details { font-size: 14pt; color: #000000; margin-bottom: 3mm; line-height: 1.6; font-weight: 500; }
@@ -915,7 +915,7 @@ export default function App() {
             <div className="subtitle">Sitzung am {formattedPrintDate()}</div>
             <div className="event-details">Ab {meta.beginn} Uhr c.t. in {meta.raum}</div>
             <div className="event-details">{meta.ort}</div>
-            <div style={{fontSize: '14pt', marginTop: '15mm', color: '#000000', fontWeight: '500'}}><strong>Stand:</strong> {new Date().toLocaleDateString('de-DE')}</div>
+            <div style={{fontSize: '14pt', color: '#000000', fontWeight: '500'}}><strong>Stand:</strong> {new Date().toLocaleDateString('de-DE')}</div>
         </div>
 
         {/* HAUPTDOKUMENT (ab Seite 2) */}
