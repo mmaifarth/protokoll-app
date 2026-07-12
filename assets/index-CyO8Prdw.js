@@ -65,16 +65,12 @@ Error generating stack: `+e.message+`
           .cover-seal {
               position: absolute;
               top: 0;
-              bottom: 0;
               left: 0;
-              right: 0;
-              margin: auto; /* Die stabilste Methode für exakte Zentrierung im Druck */
-              width: 100%; /* Nutzt nun die komplette Breite bis zu den Seitenrändern */
-              max-width: 100%; /* Aufhebung der 450px Begrenzung */
-              max-height: 100%; /* Aufhebung der 450px Begrenzung */
-              object-fit: contain; /* Behält Seitenverhältnisse bei, verhindert Dehnung/Anschnitt */
+              width: 100%; 
+              height: 100%; 
+              object-fit: contain; /* Behält Seitenverhältnisse bei, füllt den Rahmen maximal aus */
               opacity: 0.15; 
-              z-index: 1;
+              z-index: -1; /* Zwingt die Grafik semantisch in den Hintergrund */
               pointer-events: none;
           }
 
@@ -107,7 +103,7 @@ Error generating stack: `+e.message+`
 
           /* Anpassung der Überschriften zur Verhinderung von unerwünschten Seitenumbrüchen (Widows/Orphans) */
           h1 { font-size: 18pt; color: #005030; border-bottom: 2px solid #005030; padding-bottom: 5px; margin-top: 0; page-break-after: avoid; break-after: avoid; page-break-inside: avoid; break-inside: avoid; margin-bottom: 20px;}
-          h2 { font-size: 15pt; margin-top: 25px; margin-bottom: 10px; page-break-after: avoid; break-after: avoid; page-break-inside: avoid; break-inside: avoid; }
+          h2 { font-size: 15pt; font-weight: bold; margin-top: 25px; margin-bottom: 10px; page-break-after: avoid; break-after: avoid; page-break-inside: avoid; break-inside: avoid; }
           h3 { font-size: 12pt; text-transform: uppercase; color: #666666; margin-top: 15px; margin-bottom: 5px; page-break-after: avoid; break-after: avoid; page-break-inside: avoid; break-inside: avoid; }
 
           /* Aggressives Text-Wrapping für Freitexte (verhindert das Ausbrechen von URLs) */
