@@ -42,28 +42,38 @@ Error generating stack: `+e.message+`
               color: #222; 
           }
           
-          /* Die überarbeitete Titelseite mit deterministischem Grid-Layout */
+          /* Die überarbeitete Titelseite mit deterministischem Flex-Layout */
           .cover-page { 
-              display: grid;
-              place-items: center; /* Horizontale und vertikale Zentrierung */
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
               width: 100%;
-              height: 240mm; /* Minimal reduziert, um ungewollten Seitenumbruch-Konflikt mit der Tabelle zu vermeiden */
+              height: 240mm; /* Minimal reduziert, um ungewollten Seitenumbruch-Konflikt zu vermeiden */
               page-break-after: always; 
               break-after: page;
               background-color: transparent !important;
+              position: relative; /* WICHTIGER BEZUGSPUNKT für das Siegel */
           }
 
           .cover-content {
-              grid-area: 1 / 1; /* Legt den Text exakt in dieselbe Zelle wie das Siegel */
               text-align: center;
               z-index: 10;
+              width: 100%;
           }
 
           .cover-seal {
-              grid-area: 1 / 1; /* Zwingt das Bild in dieselbe Grid-Zelle */
-              width: 100%;
-              max-width: 550px; /* Begrenzung des Überlaufs */
-              opacity: 0.15; /* Leicht reduziert für optimalen Schwarz-Kontrast */
+              position: absolute;
+              top: 0;
+              bottom: 0;
+              left: 0;
+              right: 0;
+              margin: auto; /* Die stabilste Methode für exakte Zentrierung im Druck */
+              width: 80%;
+              max-width: 450px; /* Verkleinert, um harten Sicherheitsabstand nach oben/unten zu garantieren */
+              max-height: 450px;
+              object-fit: contain; /* Behält Seitenverhältnisse bei, verhindert Dehnung/Anschnitt */
+              opacity: 0.15; 
               z-index: 1;
               pointer-events: none;
           }
