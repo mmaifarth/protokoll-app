@@ -58,7 +58,7 @@ Error generating stack: `+e.message+`
 
           .cover-seal {
               position: absolute;
-              top: 40%;
+              top: 50%;
               left: 50%;
               transform: translate(-50%, -50%);
               width: 100%;
