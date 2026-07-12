@@ -588,7 +588,7 @@ export default function App() {
                         {top.antraege.map((antrag, aIndex) => (
                           <div key={aIndex} className="bg-emerald-50 border-l-4 border-emerald-600 p-5 rounded-r-lg">
                             <div className="text-base text-gray-800 mb-3 border-b border-emerald-200 pb-2">
-                              <strong>Antrag {top.item_number}: {antrag.Bezeichner}</strong> | <strong>Einreichend:</strong> {antrag.Antragsteller} | <strong>Status:</strong> {antrag.Status}
+                              <strong>Antrag {antrag.Bezeichner}</strong> | <strong>Einreichend:</strong> {antrag.Antragsteller} | <strong>Status:</strong> {antrag.Status}
                             </div>
                             
                             {antrag.Text && (
@@ -1006,8 +1006,9 @@ export default function App() {
                 <tr key={index}>
                   <td style={{ border: 'none', padding: 0, paddingBottom: '30px' }}>
                     <h2 id={targetId}>
-                      {topNumStr}: {row.title}
-                      {row.vertagt && <span style={{color: '#e65100', marginLeft: '10px'}}> [Vertagt]</span>}
+                      {/* Expliziter <strong> Tag, um Fettdruck im Print-Modus browserübergreifend zu erzwingen */}
+                      <strong>{topNumStr}: {row.title}</strong>
+                      {row.vertagt && <span style={{color: '#e65100', marginLeft: '10px', fontWeight: 'normal'}}> [Vertagt]</span>}
                       {!row.vertagt && isHauptTop(topNumStr) && row.uhrzeit && (
                         <span style={{fontSize: '12pt', color: '#555', fontWeight: 'normal', marginLeft: '10px'}}>
                           (ab {row.uhrzeit} Uhr)
