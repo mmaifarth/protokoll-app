@@ -69,9 +69,9 @@ Error generating stack: `+e.message+`
               left: 0;
               right: 0;
               margin: auto; /* Die stabilste Methode für exakte Zentrierung im Druck */
-              width: 80%;
-              max-width: 600px; /* Verkleinert, um harten Sicherheitsabstand nach oben/unten zu garantieren */
-              max-height: 600px;
+              width: 100%; /* Nutzt nun die komplette Breite bis zu den Seitenrändern */
+              max-width: 100%; /* Aufhebung der 450px Begrenzung */
+              max-height: 100%; /* Aufhebung der 450px Begrenzung */
               object-fit: contain; /* Behält Seitenverhältnisse bei, verhindert Dehnung/Anschnitt */
               opacity: 0.15; 
               z-index: 1;
