@@ -876,6 +876,27 @@ export default function App() {
           .wahl-box { background-color: #f0f9ff; border-left: 5px solid #0284c7; padding: 15px 20px; margin-top: 15px; margin-bottom: 20px; page-break-inside: avoid; }
           .wahl-header { font-weight: bold; font-size: 11pt; color: #0284c7; border-bottom: 1px solid #bae6fd; padding-bottom: 8px; margin-bottom: 12px; }
 
+          table.wahl-table { 
+              width: 100%; 
+              max-width: 100%;
+              border-collapse: collapse; 
+              page-break-inside: avoid; 
+              table-layout: fixed; 
+          }
+          table.wahl-table th, table.wahl-table td { 
+              border: none;
+              border-bottom: 1px solid #bae6fd;
+              padding: 8px 10px; 
+              text-align: left; 
+              font-size: 11pt; 
+              hyphens: auto; 
+              overflow-wrap: anywhere !important; 
+              word-break: break-word !important; 
+              background-color: transparent !important; /* Verhindert weiße Kacheln */
+          }
+          table.wahl-table th { color: #0284c7; border-bottom: 2px solid #7dd3fc; }
+          table.wahl-table tr:last-child td { border-bottom: none; }
+
           .go-box { background-color: #fff3e0; border-left: 5px solid #ff9800; padding: 12px 18px; margin-top: 10px; margin-bottom: 20px; page-break-inside: avoid; }
           .go-header { font-weight: bold; font-size: 11pt; color: #e65100; border-bottom: 1px solid #ffe0b2; padding-bottom: 6px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
           .go-content { font-size: 11pt; line-height: 1.5; margin-bottom: 6px; }
@@ -1159,10 +1180,11 @@ export default function App() {
 
                     {!row.vertagt && row.wahlen && row.wahlen.length > 0 && (
                       <>
-                        {row.wahlen.map((wahl, wIndex) => (
-                          <div className="wahl-box" key={wIndex}>
+                        {row.wahlen.map((wahl, wIdx) => (
+                          <div className="wahl-box" key={wIdx}>
                             <div className="wahl-header">Wahlergebnis: {wahl.titel}</div>
-                            <table className="data-table">
+                            {/* Geändert von data-table auf wahl-table */}
+                            <table className="wahl-table">
                               <thead>
                                 <tr>
                                   <th width="25%">Kandidat*in / Option</th>
@@ -1172,32 +1194,12 @@ export default function App() {
                                 </tr>
                               </thead>
                               <tbody>
-                                {wahl.kandidaten.map((k, kIndex) => (
-                                  <tr key={kIndex} className="border-b border-blue-100 last:border-0">
-                                    <td className="p-1">
-                                      <input type="text" value={k.name} onChange={e => updateKandidat(index, wIndex, kIndex, 'name', null, e.target.value)} className="w-full border-gray-300 rounded p-2" placeholder="Name..." />
-                                    </td>
-                                    <td className="p-1">
-                                      <div className="flex gap-1 justify-center">
-                                        <input type="number" min="0" value={k.fuer.fs} onChange={e => updateKandidat(index, wIndex, kIndex, 'fuer', 'fs', e.target.value)} className="w-14 border-gray-300 rounded p-2 text-center" title="Fachschaften" />
-                                        <input type="number" min="0" value={k.fuer.weight} onChange={e => updateKandidat(index, wIndex, kIndex, 'fuer', 'weight', e.target.value)} className="w-16 border-gray-300 rounded p-2 text-center bg-gray-50" title="Stimmgewichte" />
-                                      </div>
-                                    </td>
-                                    <td className="p-1">
-                                      <div className="flex gap-1 justify-center">
-                                        <input type="number" min="0" value={k.gegen.fs} onChange={e => updateKandidat(index, wIndex, kIndex, 'gegen', 'fs', e.target.value)} className="w-14 border-gray-300 rounded p-2 text-center" title="Fachschaften" />
-                                        <input type="number" min="0" value={k.gegen.weight} onChange={e => updateKandidat(index, wIndex, kIndex, 'gegen', 'weight', e.target.value)} className="w-16 border-gray-300 rounded p-2 text-center bg-gray-50" title="Stimmgewichte" />
-                                      </div>
-                                    </td>
-                                    <td className="p-1">
-                                      <div className="flex gap-1 justify-center">
-                                        <input type="number" min="0" value={k.enthaltung.fs} onChange={e => updateKandidat(index, wIndex, kIndex, 'enthaltung', 'fs', e.target.value)} className="w-14 border-gray-300 rounded p-2 text-center" title="Fachschaften" />
-                                        <input type="number" min="0" value={k.enthaltung.weight} onChange={e => updateKandidat(index, wIndex, kIndex, 'enthaltung', 'weight', e.target.value)} className="w-16 border-gray-300 rounded p-2 text-center bg-gray-50" title="Stimmgewichte" />
-                                      </div>
-                                    </td>
-                                    <td className="p-1 text-center">
-                                      <button onClick={() => removeKandidat(index, wIndex, kIndex)} className="text-red-400 hover:text-red-600"><Trash2 size={20}/></button>
-                                    </td>
+                                {wahl.kandidaten.map((k, kIdx) => (
+                                  <tr key={kIdx}>
+                                    <td><strong>{k.name}</strong></td>
+                                    <td>{k.fuer.fs} / {k.fuer.weight}</td>
+                                    <td>{k.gegen.fs} / {k.gegen.weight}</td>
+                                    <td>{k.enthaltung.fs} / {k.enthaltung.weight}</td>
                                   </tr>
                                 ))}
                               </tbody>
