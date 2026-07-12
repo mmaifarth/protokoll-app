@@ -64,13 +64,13 @@ Error generating stack: `+e.message+`
 
           .cover-seal {
               position: absolute;
-              top: 0;
-              left: 0;
-              width: 100%; 
-              height: 100%; 
-              object-fit: contain; /* Behält Seitenverhältnisse bei, füllt den Rahmen maximal aus */
-              opacity: 0.15; 
-              z-index: -1; /* Zwingt die Grafik semantisch in den Hintergrund */
+              top: 50%; /* Auf exakt 50% zentriert für feste optische Platzierung */
+              left: 50%;
+              transform: translate(-50%, -50%);
+              width: 80%;
+              max-width: 600px; /* Zusätzlicher Schutz für große Siegel-Bilder */
+              opacity: 0.2; /* Opake, fixe Grafik explizit nur für Seite 1 */
+              z-index: -1;
               pointer-events: none;
           }
 
