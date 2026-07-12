@@ -819,8 +819,8 @@ export default function App() {
               right: 0;
               margin: auto; /* Die stabilste Methode für exakte Zentrierung im Druck */
               width: 80%;
-              max-width: 450px; /* Verkleinert, um harten Sicherheitsabstand nach oben/unten zu garantieren */
-              max-height: 450px;
+              max-width: 600px; /* Verkleinert, um harten Sicherheitsabstand nach oben/unten zu garantieren */
+              max-height: 600px;
               object-fit: contain; /* Behält Seitenverhältnisse bei, verhindert Dehnung/Anschnitt */
               opacity: 0.15; 
               z-index: 1;
