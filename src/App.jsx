@@ -793,7 +793,7 @@ export default function App() {
 
           .cover-seal {
               position: absolute;
-              top: 50%; /* Auf exakt 50% zentriert für feste optische Platzierung */
+              top: -50%;
               left: 50%;
               transform: translate(-50%, -50%);
               width: 100%;
