@@ -375,7 +375,8 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
+    <div className="min-h-screen bg-gray-50 print:bg-white font-sans text-gray-800">
+      {/* Hinzufügen von print:bg-white zum Haupt-Container, um das bg-gray-50 im Druck zu überschreiben */}
       
       {/* EDITOR ANSICHT */}
       <div className="print:hidden max-w-5xl mx-auto p-6 space-y-8">
@@ -754,7 +755,8 @@ export default function App() {
           }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           
-          body, .hidden.print\\:block { background-color: transparent !important; }
+          /* Explizites Erzwingen eines weißen Hintergrunds für alle übergeordneten Druck-Container */
+          html, body, .hidden.print\\:block { background-color: #ffffff !important; }
           body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12pt; line-height: 1.5; color: #222; }
           
           .cover-page { 
@@ -773,7 +775,7 @@ export default function App() {
               left: 50%;
               transform: translate(-50%, -50%);
               width: 80%;
-              opacity: 1; /* Opake, fixe Grafik explizit nur für Seite 1 */
+              opacity: 0.25; /* Opake, fixe Grafik explizit nur für Seite 1 */
               z-index: -1;
               pointer-events: none;
           }
