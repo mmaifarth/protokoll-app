@@ -745,7 +745,7 @@ export default function App() {
         <style dangerouslySetInnerHTML={{__html: `
           @page {
               size: A4;
-              margin: 25mm 20mm 25mm 20mm;
+              margin: 0mm !important; /* LÖSUNG 2: Hebt Browser-Standardränder konsequent auf */
               @bottom-center {
                   content: counter(page);
                   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -775,11 +775,13 @@ export default function App() {
               max-width: 100%;
           }
 
-          /* --- NEU: DIN A4 BOUNDING BOX --- */
+          /* --- NEU: DIN A4 BOUNDING BOX (Lösung 2) --- */
           .a4-print-box {
-              width: 170mm !important; /* 210mm Gesamtbreite - 2x 20mm Seitenrand = 170mm exakte Arbeitsbreite */
-              max-width: 170mm !important;
-              margin: 0 auto; /* Zentriert die Bounding Box, falls der Body unerwartet ausbricht */
+              width: 210mm !important; /* Volle A4-Breite, da das Padding nun die Einrückung übernimmt */
+              max-width: 210mm !important;
+              padding: 25mm 20mm 25mm 20mm !important; /* Übernimmt die Rolle der vorherigen @page-Margins */
+              margin: 0 auto; 
+              box-sizing: border-box !important;
           }
           
           .cover-page { 
