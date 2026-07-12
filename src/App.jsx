@@ -915,7 +915,7 @@ export default function App() {
             <div className="subtitle">Sitzung am {formattedPrintDate()}</div>
             <div className="event-details">Ab {meta.beginn} Uhr c.t. in {meta.raum}</div>
             <div className="event-details">{meta.ort}</div>
-            <div style={{fontSize: '14pt', color: '#000000', fontWeight: '500'}}><strong>Stand:</strong> {new Date().toLocaleDateString('de-DE')}</div>
+            <div style={{fontSize: '14pt', marginTop: '15mm', color: '#000000', fontWeight: '500'}}><strong>Stand:</strong> {new Date().toLocaleDateString('de-DE')}</div>
         </div>
 
         {/* HAUPTDOKUMENT (ab Seite 2) */}
