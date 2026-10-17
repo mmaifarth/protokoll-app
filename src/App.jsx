@@ -200,19 +200,21 @@ export default function App() {
     reader.onload = (e) => {
       const data = parseCSV(e.target.result);
       if (type === 'tagesordnung') {
-        const enrichedData = data.map(row => ({
-          ...row,
-          item_number: (row.item_number || "").replace(/\.0$/, "").trim(),
-          title: (row.title || "").trim(),
-          slug: slugify((row.item_number || "") + "-" + (row.title || "")),
-          vertagt: false,
-          uhrzeit: '',
-          goAntraege: [],
-          wahlen: [], 
-          antraege: [],
-          showSitzungsverlauf: false, 
-          sitzungsverlaufText: ''     
-        }));
+        const enrichedData = data
+          .filter(row => (row.agenda_type || "").trim().toLowerCase() !== 'internal')
+          .map(row => ({
+            ...row,
+            item_number: (row.item_number || "").replace(/\.0$/, "").trim(),
+            title: (row.title || "").trim(),
+            slug: slugify((row.item_number || "") + "-" + (row.title || "")),
+            vertagt: false,
+            uhrzeit: '',
+            goAntraege: [],
+            wahlen: [], 
+            antraege: [],
+            showSitzungsverlauf: false, 
+            sitzungsverlaufText: ''     
+          }));
         setTagesordnung(enrichedData);
       } else {
         setAntraegeRaw(data);
