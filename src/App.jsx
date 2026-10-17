@@ -78,16 +78,12 @@ const FACHSCHAFTEN_LIST = [
   "17 Pädagogik",
   "18 Psychologie",
   "19 Schulpsychologie",
-  "21 Japanologie",
-  "22 Archäologie und Altertum",
-  "23 Naher und Mittlerer Osten/Byzantinistik",
-  "24 Sinologie/Indologie/Tibetologie",
+  "24 Sinologie",
   "25 Ethnologie",
   "26 Kulturwissenschaft",
   "27 Amerikanistik",
   "28 Anglistik",
   "29 Computerlinguistik",
-  "30 Deutsch als Fremdsprache",
   "31 Germanistik",
   "33 Klassische Philologie",
   "34 Allgemeine und Vergleichende Literaturwissenschaft",
@@ -1057,7 +1053,7 @@ export default function App() {
                                 <tr>
                                     <td><strong>Beschlussfähigkeit (Anwesende Fachschaften &ge; 24)</strong></td>
                                     <td style={{fontWeight: 'bold', color: top1Anwesend.length >= 24 ? '#005030' : '#b50000'}}>
-                                        {top1Anwesend.length >= 24 ? 'Ja' : 'Nein'}
+                                        {top1Anwesend.length >= 22 ? 'Ja' : 'Nein'}
                                     </td>
                                 </tr>
                                 {top1Entschuldigt.length > 0 && (
